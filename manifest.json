@@ -1,0 +1,17 @@
+{
+  "name": "Absensi Produksi",
+  "short_name": "Absensi",
+  "description": "Sistem Absensi Karyawan Produksi",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#0066cc",
+  "icons": [
+    {
+      "src": "ikon-baru.png",
+      "sizes": "192x192 512x512 1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

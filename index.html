@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
-    <link rel="apple-touch-icon" href="ikon-baru.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Absensi Produksi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Produksi Pro</title>
     
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
         :root {
-            --primary: #3b82f6;
-            --primary-dark: #2563eb;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
             --bg-body: #f1f5f9;
             --bg-card: #ffffff;
             --text-main: #0f172a;
@@ -29,227 +31,318 @@
             --c-sb: #64748b; 
             --c-cuti: #059669;
             --c-setengah: #fbbf24;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             background-color: var(--bg-body); 
             color: var(--text-main); 
             margin: 0; 
-            padding: 0; 
-            padding-bottom: 70px; /* Space for bottom nav */
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Container utama sekarang FULL layarnya */
-        .app-container { width: 100%; min-height: 100vh; background: var(--bg-body); position: relative; }
-
-        /* --- HEADER & INPUT FILTER --- */
-        .app-header { background: var(--bg-card); padding: 15px 20px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: center; }
-        .header-content { width: 100%; max-width: 600px; } /* Biar kotak filternya tetep rapi di tengah */
+        /* --- SIDEBAR --- */
+        .sidebar { width: 200px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 100; }
+        .sidebar-header { padding: 20px 15px; font-size: 18px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .sidebar-nav { flex: 1; padding: 15px 10px; display: flex; flex-direction: column; gap: 5px; overflow-y: auto; }
+        .nav-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px; transition: 0.2s; color: #cbd5e1; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: var(--sidebar-hover); color: white; }
+        .nav-item.active { background: var(--primary); color: white; font-weight: 600; box-shadow: var(--shadow-md); }
         
-        .app-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0 0 15px 0; text-align: center; }
-        .filter-group { display: flex; gap: 10px; }
-        .filter-select { flex: 1; padding: 12px; font-size: 15px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; outline: none; font-weight: 600; color: var(--text-main); appearance: none; text-align: center; }
-        .filter-select:focus { border-color: var(--primary); }
-        .filter-date { flex: 1; padding: 12px; font-size: 14px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; outline: none; font-weight: 600; text-align: center; }
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg-body); position: relative; scroll-behavior: smooth; }
+        .topbar { background: var(--bg-card); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+        .topbar h2 { margin: 0; font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .realtime-clock { font-weight: 600; color: var(--text-muted); font-size: 14px; background: #f8fafc; padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border); }
 
-        /* --- LIST KARYAWAN (MODE ABSEN) --- */
-        /* List absen dibatasin 600px biar di PC kelihatan kaya bentuk HP */
-        .list-container { padding: 15px; display: flex; flex-direction: column; gap: 10px; max-width: 600px; margin: 0 auto; }
-        
-        .employee-card { background: var(--bg-card); padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid var(--border); transition: transform 0.1s; }
-        .employee-card:active { transform: scale(0.98); }
-        
-        .emp-info { display: flex; align-items: center; gap: 12px; flex: 1; overflow: hidden; }
-        .emp-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0; }
-        .emp-details { display: flex; flex-direction: column; overflow: hidden; }
-        .emp-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .emp-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-        
-        .status-btn { padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
-        .status-hadir { background: #ecfdf5; color: var(--c-hadir); border: 1px solid #a7f3d0; }
-        .status-alpha { background: var(--c-alpha); color: white; }
-        .status-izin { background: var(--c-izin); color: white; }
-        .status-sd { background: var(--c-sd); color: white; }
-        .status-sb { background: var(--c-sb); color: white; }
-        .status-cuti { background: var(--c-cuti); color: white; }
-        .status-setengah { background: var(--c-setengah); color: #78350f; }
+        .content-body { padding: 30px; max-width: 1400px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 
-        /* --- BOTTOM SHEET (POPUP) --- */
-        .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s; }
-        .bottom-sheet { position: fixed; bottom: -100%; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px; background: white; border-radius: 24px 24px 0 0; z-index: 1001; transition: bottom 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); padding: 25px 20px; box-sizing: border-box; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-        .bottom-sheet.active { bottom: 0; }
-        .bottom-sheet-overlay.active { display: block; opacity: 1; }
-        .sheet-handle { width: 50px; height: 5px; background: #cbd5e1; border-radius: 5px; margin: 0 auto 20px auto; }
-        .sheet-title { font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 20px; color: var(--text-main); }
+        /* --- VIEW BERANDA --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--bg-card); padding: 12px 15px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: transform 0.2s; position: relative; overflow: hidden; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .stat-card::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--primary); border-radius: 4px 0 0 4px; }
+        .stat-card h4 { margin: 0 0 5px 0; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card p { margin: 0; font-size: 20px; font-weight: 800; color: var(--text-main); }      
+
+        .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-card { background: var(--bg-card); padding: 20px; border-radius: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); height: 320px; }
+
+        /* --- VIEW AREA (INPUT & LAPORAN) --- */
+        .controls-panel { background: var(--bg-card); padding: 20px; border-radius: 16px; box-shadow: var(--shadow-sm); margin-bottom: 25px; display: flex; gap: 15px; border: 1px solid var(--border); align-items: center; }
+        .form-control { flex: 1; padding: 12px 15px; font-size: 15px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; outline: none; font-weight: 600; color: var(--text-main); transition: 0.2s; cursor: pointer; }
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         
-        .grid-status { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .btn-sheet { padding: 15px; border-radius: 12px; border: none; font-size: 15px; font-weight: bold; cursor: pointer; color: white; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-sheet:active { transform: scale(0.95); }
-        .btn-cancel-absen { width: 100%; padding: 15px; background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; font-weight: bold; font-size: 15px; margin-top: 10px; cursor: pointer; }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; background: #e2e8f0; padding: 5px; border-radius: 12px; display: inline-flex; }
+        .tab-btn { padding: 10px 25px; border: none; background: transparent; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: var(--shadow-sm); }
 
-        /* --- LAPORAN TABEL VIEW (FULL WIDTH DI PC) --- */
-        .laporan-container { padding: 15px; display: none; width: 100%; box-sizing: border-box; }
-        .card-laporan { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 20px; border: 1px solid var(--border); overflow-x: auto; width: 100%; }
+        /* Grid Input Absen */
+        .emp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .emp-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .emp-card:hover { border-color: #cbd5e1; box-shadow: var(--shadow-md); }
+        .emp-info { display: flex; gap: 15px; align-items: center; }
+        .avatar { width: 45px; height: 45px; background: #f1f5f9; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: var(--primary); font-size: 18px; }
+        .emp-name { font-weight: 700; font-size: 15px; color: var(--text-main); margin-bottom: 4px; }
+        .emp-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: #f1f5f9; color: var(--text-muted); font-weight: 600; }
         
-        /* Lebar tabel dibuat minimal 1200px biar di PC memanjang lega */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1200px; }
-        th, td { border: 1px solid var(--border); padding: 10px 8px; text-align: center; }
-        th { background-color: #f8fafc; font-weight: 700; color: var(--text-muted); }
-        .name-col { text-align: left; position: sticky; left: 0; background: white; z-index: 10; min-width: 180px; font-weight: 600; box-shadow: 2px 0 5px rgba(0,0,0,0.02); }
-        th.name-col { background: #f8fafc; z-index: 11; }
-
-        /* Media Query: Kasih jarak/padding ekstra kalau layarnya besar (PC) */
-        @media (min-width: 1024px) {
-            .laporan-container { padding: 25px 40px; }
-            .card-laporan { padding: 25px; }
-        }
-
-        /* --- BOTTOM NAVIGATION --- */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid var(--border); z-index: 100; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        .bottom-nav-inner { max-width: 600px; margin: 0 auto; display: flex; justify-content: space-around; padding: 10px 0; }
+        .status-btn { padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; }
+        .status-btn:hover { opacity: 0.9; transform: scale(1.02); }
         
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); text-decoration: none; cursor: pointer; width: 33%; -webkit-tap-highlight-color: transparent; }
-        .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 22px; }
-        .nav-text { font-size: 11px; font-weight: 700; }
+        .s-hadir { background: #ecfdf5; color: var(--c-hadir); border: 1px solid #a7f3d0; }
+        .s-alpha { background: var(--c-alpha); color: white; }
+        .s-izin { background: var(--c-izin); color: white; }
+        .s-sd { background: var(--c-sd); color: white; }
+        .s-sb { background: var(--c-sb); color: white; }
+        .s-cuti { background: var(--c-cuti); color: white; }
+        .s-setengah { background: var(--c-setengah); color: #78350f; }
 
-        /* --- TOAST --- */
-        #custom-toast { position: fixed; bottom: 80px; left: 50%; transform: translate(-50%, 20px); background: #1e293b; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: bold; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 9999; text-align: center; white-space: nowrap; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        #custom-toast.show { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+        /* Tabel Laporan Mewah */
+        .table-wrapper { background: white; border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: auto; margin-bottom: 30px; max-height: 65vh; } /* Tambah max-height dan overflow:auto */
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 13px; }
+        th, td { border: 1px solid var(--border); padding: 12px; text-align: center; }
+        /* Box-shadow tipis di TH biar kelihatan ngegantung pas discroll */
+        th { background: #f8fafc; font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+        .name-col { text-align: left; position: sticky; left: 0; background: white; z-index: 11; font-weight: 600; min-width: 200px; box-shadow: 2px 0 5px rgba(0,0,0,0.02); }
+        th.name-col { background: #f8fafc; z-index: 12; }
+        tr:hover td { background: #f8fafc; }
+        tr:hover .name-col { background: #f8fafc; }
 
-        /* KELOLA KARYAWAN VIEW (Dibatasi 600px juga biar rapi) */
-        #view-karyawan { display: none; padding: 15px; max-width: 600px; margin: 0 auto; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        /* --- MODAL PC (CENTERED) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-box { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: scale(0.95); transition: 0.3s; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
+        .btn-close { background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; padding: 0; line-height: 1; }
+        .btn-close:hover { color: var(--c-alpha); }
         
-        /* Empty State */
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-        .empty-state h3 { color: var(--text-main); margin-bottom: 5px; }
+        .grid-status { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .btn-status-modal { padding: 16px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-status-modal:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-reset { width: 100%; padding: 16px; background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn-reset:hover { background: #e2e8f0; }
+
+        /* TOAST */
+        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--sidebar-bg); color: white; padding: 15px 25px; border-radius: 12px; font-size: 15px; font-weight: 600; box-shadow: var(--shadow-lg); opacity: 0; visibility: hidden; transition: 0.3s; z-index: 9999; transform: translateY(20px); }
+        #toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        /* Kelola Karyawan Input */
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+
+	/* Tambahan untuk Kotak Shift Terpisah */
+        .split-stat { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .stat-half { flex: 1; text-align: center; }
+        .stat-half p { font-size: 20px; font-weight: 800; color: var(--text-main); margin: 0; }
+        .stat-half span { font-size: 10px; font-weight: 800; display: block; margin-bottom: 2px; text-transform: uppercase; }
+        .lbl-inj { color: #1e293b; }
+        .lbl-assy { color: #2563eb; }
+        .stat-divider { width: 3px; height: 35px; background-color: #ef4444; border-radius: 2px; margin: 0 10px; } /* Garis merah persis kaya request kamu */
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        
-        <div class="app-header">
-            <div class="header-content">
-                <h1 class="app-title" id="main-title">Absen Harian</h1>
-                <div class="filter-group">
-                    <select class="filter-select" id="area-select" onchange="refreshAll()">
-                        <option value="" disabled selected>Pilih Area</option>
-                        <option value="Injection">Injection</option>
-                        <option value="Assembling">Assembling</option>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            ⚡ AbsensiPro
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item active" id="nav-beranda" onclick="openView('beranda')">🏠 Dashboard Beranda</div>
+            <div class="nav-item" id="nav-inj" onclick="openArea('Injection')">⚙️ Area Injection</div>
+            <div class="nav-item" id="nav-assy" onclick="openArea('Assembling')">🔧 Area Assembling</div>
+            <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1);"></div>
+            <div class="nav-item" id="nav-karyawan" onclick="openView('karyawan')">👥 Kelola Karyawan</div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <h2 id="topbar-title">Dashboard Beranda</h2>
+            <div class="realtime-clock" id="clock">Memuat Jam...</div>
+        </div>
+
+        <div class="content-body">
+            
+            <div id="view-beranda">
+                <div class="stats-grid">
+                    <div class="stat-card" style="--primary: #3b82f6;">
+                        <h4>Total Operator</h4>
+                        <p id="st-total">0</p>
+                    </div>
+                    <div class="stat-card" style="--primary: #10b981;">
+                        <h4>Karyawan Tetap</h4>
+                        <p id="st-tetap">0</p>
+                    </div>
+                    <div class="stat-card" style="--primary: #f59e0b;">
+                        <h4>Dari Yayasan</h4>
+                        <p id="st-yayasan">0</p>
+                    </div>
+                    <div class="stat-card" style="--primary: #64748b; background: #f8fafc;">
+                        <h4>Shift 1</h4>
+                        <div class="split-stat">
+                            <div class="stat-half"><span class="lbl-inj">INJ</span><p id="st-s1-inj">0</p></div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-half"><span class="lbl-assy">ASSY</span><p id="st-s1-assy">0</p></div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--primary: #64748b; background: #f8fafc;">
+                        <h4>Shift 2</h4>
+                        <div class="split-stat">
+                            <div class="stat-half"><span class="lbl-inj">INJ</span><p id="st-s2-inj">0</p></div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-half"><span class="lbl-assy">ASSY</span><p id="st-s2-assy">0</p></div>
+                        </div>
+                    </div>
+                    <div class="stat-card" style="--primary: #64748b; background: #f8fafc;">
+                        <h4>Shift 3</h4>
+                        <div class="split-stat">
+                            <div class="stat-half"><span class="lbl-inj">INJ</span><p id="st-s3-inj">0</p></div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-half"><span class="lbl-assy">ASSY</span><p id="st-s3-assy">0</p></div>
+                        </div>
+                    </div>
+                </div>                
+		
+		<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--text-main);">Top 5 Karyawan Sering Mangkir</h3>
+                    <select id="filter-shift-grafik" class="form-control" style="max-width: 200px; padding: 8px 12px; font-size: 14px;" onchange="loadGrafikBeranda()">
+                        <option value="Semua">Semua Shift</option>
+                        <option value="1">Khusus Shift 1</option>
+                        <option value="2">Khusus Shift 2</option>
+                        <option value="3">Khusus Shift 3</option>
                     </select>
-                    <select class="filter-select" id="shift-select" onchange="refreshAll()" disabled>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card"><canvas id="chartInj"></canvas></div>
+                    <div class="chart-card"><canvas id="chartAssy"></canvas></div>
+                </div>
+            </div>
+
+            <div id="view-area" style="display: none;">
+                <div class="controls-panel">
+                    <div style="font-weight: 700; color: var(--text-muted); font-size: 15px;">Filter:</div>
+                    <select class="form-control" id="shift-select" onchange="refreshArea()">
                         <option value="" disabled selected>Pilih Shift</option>
                         <option value="1">Shift 1</option>
                         <option value="2">Shift 2</option>
                         <option value="3">Shift 3</option>
+                        <option value="Rolling">Rolling (Mandor)</option>
                     </select>
-                    <input type="date" class="filter-date" id="date-select" onchange="refreshAll()">
+                    <input type="date" class="form-control" id="date-select" onchange="refreshArea()">
                 </div>
-            </div>
-        </div>
 
-        <div id="view-absen" class="list-container">
-            <div class="empty-state">
-                <h3 style="font-size: 24px; margin-bottom: 10px;">👋 Halo Mandor!</h3>
-                <p>Silakan pilih <b>Area</b> dan <b>Shift</b> di atas untuk mulai mengabsen karyawan hari ini.</p>
-            </div>
-        </div>
-
-        <div id="view-laporan" class="laporan-container">
-            <h3 style="margin-top: 0; color: var(--text-main);">Laporan Rekapitulasi Bulan Ini</h3>
-            <div class="card-laporan">
-                <table id="table-rekap">
-                    <thead>
-                        <tr>
-                            <th class="name-col">Nama Karyawan</th>
-                            <th style="color:var(--c-alpha)">A</th>
-                            <th style="color:var(--c-izin)">I</th>
-                            <th style="color:var(--c-sd)">SD</th>
-                            <th style="color:var(--c-sb)">SB</th>
-                            <th style="color:var(--c-cuti)">C</th>
-                            <th>I½ (Jam)</th>
-                            <th>S½ (Jam)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="body-rekap"></tbody>
-                </table>
-            </div>
-
-            <h3 style="color: var(--text-main);">Detail Tabel Kertas (1-31)</h3>
-            <div class="card-laporan">
-                <table id="table-harian">
-                    <thead><tr id="header-harian"><th class="name-col">Nama Karyawan</th></tr></thead>
-                    <tbody id="body-harian"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="view-karyawan">
-            <div class="card-laporan" style="margin-bottom: 20px;">
-                <h3 style="margin-top:0;">Tambah Karyawan Baru</h3>
-                <div class="form-group">
-                    <input type="text" id="new-nama" placeholder="Nama Lengkap Karyawan">
-                    <div style="display: flex; gap: 10px;">
-                        <select id="new-area"><option value="" disabled selected>Pilih Area</option><option value="Injection">Injection</option><option value="Assembling">Assembling</option></select>
-                        <select id="new-shift"><option value="" disabled selected>Pilih Shift</option><option value="1">Shift 1</option><option value="2">Shift 2</option><option value="3">Shift 3</option><option value="Rolling">Rolling</option></select>
-                        <select id="new-status"><option value="" disabled selected>Status</option><option value="Tetap">Tetap</option><option value="Yayasan">Yayasan</option></select>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <div class="tab-buttons" id="area-tabs" style="display: none; margin-bottom: 0;">
+                        <button class="tab-btn active" id="tab-input" onclick="switchAreaTab('input')">📝 Input Absen Harian</button>
+                        <button class="tab-btn" id="tab-laporan" onclick="switchAreaTab('laporan')">📊 Lihat Tabel Laporan</button>
                     </div>
-                    <button onclick="tambahKaryawan()" style="background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer;">Simpan Data Baru</button>
+                    
+                    <input type="text" id="search-grid" class="form-control" placeholder="🔍 Cari nama karyawan..." oninput="filterGridAbsen()" style="max-width: 280px; display: none;">
                 </div>
-            </div>
-            
-            <div class="card-laporan">
-                <h3 style="margin-top:0;">Daftar Semua Karyawan</h3>
-                <input type="text" id="search-karyawan" placeholder="🔍 Cari nama..." oninput="filterKaryawanList()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px; box-sizing: border-box;">
-                <table style="min-width: 100%;">
-                    <thead><tr><th style="text-align: left;">Nama</th><th>Area</th><th>Shift</th><th>Aksi</th></tr></thead>
-                    <tbody id="body-master-karyawan"></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="bottom-nav">
-            <div class="bottom-nav-inner">
-                <div class="nav-item active" onclick="switchTab('absen', this)">
-                    <span class="nav-icon">📝</span>
-                    <span class="nav-text">Absen Harian</span>
+                <div id="area-input" class="emp-grid">
+                    <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
+                        Pilih Shift di atas untuk menampilkan daftar karyawan.
+                    </div>
                 </div>
-                <div class="nav-item" onclick="switchTab('laporan', this)">
-                    <span class="nav-icon">📊</span>
-                    <span class="nav-text">Laporan</span>
-                </div>
-                <div class="nav-item" onclick="switchTab('karyawan', this)">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text">Pengaturan</span>
+
+                <div id="area-laporan" style="display: none;">
+                    <h3 style="margin-top: 0;">Rekapitulasi Bulan Ini</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="name-col">Nama Karyawan</th>
+                                    <th style="color:var(--c-alpha)">A</th>
+                                    <th style="color:var(--c-izin)">I</th>
+                                    <th style="color:var(--c-sd)">SD</th>
+                                    <th style="color:var(--c-sb)">SB</th>
+                                    <th style="color:var(--c-cuti)">C</th>
+                                    <th>I½ (Jam)</th>
+                                    <th>S½ (Jam)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-rekap"></tbody>
+                        </table>
+                    </div>
+
+                    <h3>Detail Kehadiran (1-31)</h3>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr id="header-harian"><th class="name-col">Nama Karyawan</th></tr></thead>
+                            <tbody id="body-harian"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="bottom-sheet-overlay" id="sheet-overlay" onclick="closeSheet()"></div>
-        <div class="bottom-sheet" id="sheet">
-            <div class="sheet-handle"></div>
-            <div class="sheet-title" id="sheet-emp-name">Pilih Status: Budi</div>
+            <div id="view-karyawan" style="display: none;">
+                <div class="table-wrapper" style="padding: 25px;">
+                    <h3 id="form-karyawan-title" style="margin-top: 0; margin-bottom: 20px;">Tambah Karyawan Baru</h3>
+                    <div class="form-row">
+                        <input type="text" class="form-control" id="new-nama" placeholder="Nama Lengkap">
+                        <select class="form-control" id="new-area">
+                            <option value="" disabled selected>Pilih Area</option>
+                            <option value="Injection">Injection</option><option value="Assembling">Assembling</option>
+                        </select>
+                        <select class="form-control" id="new-shift">
+                            <option value="" disabled selected>Pilih Shift</option>
+                            <option value="1">Shift 1</option><option value="2">Shift 2</option>
+                            <option value="3">Shift 3</option><option value="Rolling">Rolling</option>
+                        </select>
+                        <select class="form-control" id="new-status">
+                            <option value="" disabled selected>Status</option>
+                            <option value="Tetap">Tetap</option><option value="Yayasan">Yayasan</option>
+                        </select>
+                        <button id="btn-save-karyawan" onclick="simpanKaryawan()" style="background: var(--primary); color: white; border: none; padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;">Simpan</button>
+                        <button id="btn-cancel-edit" onclick="batalEdit()" style="background: var(--text-muted); color: white; border: none; padding: 0 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; display: none;">Batal</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper" style="padding: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;">Database Karyawan</h3>
+                        <input type="text" class="form-control" id="search-karyawan" placeholder="🔍 Cari nama..." oninput="filterKaryawan()" style="max-width: 300px;">
+                    </div>
+                    <table style="min-width: 100%;">
+                        <thead><tr><th style="text-align: left;">Nama</th><th>Area</th><th>Shift</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <tbody id="body-master"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modal-status" onclick="if(event.target===this) closeModal()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title">Pilih Status</h3>
+                <button class="btn-close" onclick="closeModal()">&times;</button>
+            </div>
             
             <div class="grid-status">
-                <button class="btn-sheet" style="background: var(--c-alpha);" onclick="saveAbsen('A', 'var(--c-alpha)')">Alpha (A)</button>
-                <button class="btn-sheet" style="background: var(--c-izin);" onclick="saveAbsen('I', 'var(--c-izin)')">Izin (I)</button>
-                <button class="btn-sheet" style="background: var(--c-sd);" onclick="saveAbsen('SD', 'var(--c-sd)')">Sakit Dokter</button>
-                <button class="btn-sheet" style="background: var(--c-sb);" onclick="saveAbsen('SB', 'var(--c-sb)')">Sakit Biasa</button>
-                <button class="btn-sheet" style="background: var(--c-setengah); color: #78350f;" onclick="saveAbsen('I½', 'var(--c-setengah)')">Izin ½ Hari</button>
-                <button class="btn-sheet" style="background: var(--c-setengah); color: #78350f;" onclick="saveAbsen('S½', 'var(--c-setengah)')">Sakit ½ Hari</button>
-                <button class="btn-sheet" style="background: var(--c-cuti); grid-column: span 2;" onclick="saveAbsen('C', 'var(--c-cuti)')">Cuti (C)</button>
+                <button class="btn-status-modal" style="background: var(--c-alpha);" onclick="saveAbsen('A', 'var(--c-alpha)')">Alpha (A)</button>
+                <button class="btn-status-modal" style="background: var(--c-izin);" onclick="saveAbsen('I', 'var(--c-izin)')">Izin (I)</button>
+                <button class="btn-status-modal" style="background: var(--c-sd);" onclick="saveAbsen('SD', 'var(--c-sd)')">Sakit Dokter</button>
+                <button class="btn-status-modal" style="background: var(--c-sb);" onclick="saveAbsen('SB', 'var(--c-sb)')">Sakit Biasa</button>
+                <button class="btn-status-modal" style="background: var(--c-setengah); color: #78350f;" onclick="saveAbsen('I½', 'var(--c-setengah)')">Izin ½ Hari</button>
+                <button class="btn-status-modal" style="background: var(--c-setengah); color: #78350f;" onclick="saveAbsen('S½', 'var(--c-setengah)')">Sakit ½ Hari</button>
+                <button class="btn-status-modal" style="background: var(--c-cuti); grid-column: span 2;" onclick="saveAbsen('C', 'var(--c-cuti)')">Cuti (C)</button>
             </div>
             
-            <button class="btn-cancel-absen" onclick="deleteAbsen()">✅ Ralat: Ubah jadi Hadir Terus</button>
+            <button class="btn-reset" onclick="deleteAbsen()">✅ Ralat: Kembalikan ke Hadir</button>
         </div>
-
-        <div id="custom-toast">Data tersimpan!</div>
     </div>
+
+    <div id="toast">Data berhasil disimpan!</div>
 
     <script>
         // INISIALISASI FIREBASE
@@ -264,318 +357,397 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Variabel Global
         let masterKaryawan = [];
         let currentMonthData = [];
+        let activeArea = "";
         let selectedEmpId = null;
-        let selectedEmpName = null;
 
-        // Set Tanggal Hari Ini & Siapkan Header Tabel Laporan
+        // Jam & Tanggal Setup
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleDateString('id-ID', { weekday:'long', day:'2-digit', month:'short', year:'numeric' }) + ' - ' + now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+        }, 1000);
+        
         document.getElementById('date-select').valueAsDate = new Date();
         const headerHarian = document.getElementById('header-harian');
         for(let i=1; i<=31; i++) {
             let th = document.createElement('th'); th.innerText = i; headerHarian.appendChild(th);
         }
 
-        // Logic Navigasi Tab
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            el.classList.add('active');
+        // ================= LOGIKA NAVIGASI =================
+        function updateNav(activeId, title) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(activeId).classList.add('active');
+            document.getElementById('topbar-title').innerText = title;
             
-            document.getElementById('view-absen').style.display = 'none';
-            document.getElementById('view-laporan').style.display = 'none';
-            document.getElementById('view-karyawan').style.display = 'none';
-            
-            document.getElementById('view-' + tabId).style.display = (tabId === 'absen' || tabId === 'karyawan') ? 'flex' : 'block';
-            if(tabId === 'karyawan') document.getElementById('view-' + tabId).style.flexDirection = 'column';
+            ['view-beranda', 'view-area', 'view-karyawan'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
 
-            const titles = { 'absen': 'Absen Harian', 'laporan': 'Laporan Bulanan', 'karyawan': 'Kelola Karyawan' };
-            document.getElementById('main-title').innerText = titles[tabId];
-
-            if(tabId === 'karyawan') {
-                const pin = prompt("🔒 Masukkan PIN Mandor:");
-                if(pin !== "123456") {
-                    showToast("❌ PIN Salah!", "var(--c-alpha)");
-                    switchTab('absen', document.querySelector('.nav-item')); // Balik ke absen
-                } else {
-                    renderMasterKaryawan();
-                }
-            } else if (tabId === 'laporan') {
-                renderLaporan();
+        function openView(viewName) {
+            if(viewName === 'beranda') {
+                updateNav('nav-beranda', 'Dashboard Beranda');
+                document.getElementById('view-beranda').style.display = 'block';
+                loadDataUtama(); // Refresh Data Dashboard
+            } else if(viewName === 'karyawan') {
+                const pin = prompt("🔒 Masukkan PIN HRD / Mandor:");
+                if(pin !== "111111") return showToast("❌ PIN Salah!", "var(--c-alpha)");
+                updateNav('nav-karyawan', 'Kelola Master Karyawan');
+                document.getElementById('view-karyawan').style.display = 'block';
+                renderTabelMaster();
             }
         }
 
-        // Load Data Utama
-        function loadDataMaster() {
+        function openArea(areaName) {
+            activeArea = areaName;
+            const navId = areaName === 'Injection' ? 'nav-inj' : 'nav-assy';
+            updateNav(navId, `Area ${areaName.toUpperCase()}`);
+            document.getElementById('view-area').style.display = 'block';
+            document.getElementById('shift-select').value = ""; // Reset Shift
+            document.getElementById('area-tabs').style.display = 'none';
+            document.getElementById('search-grid').style.display = 'none'; // Sembunyikan search
+            document.getElementById('search-grid').value = ''; // Kosongkan inputan
+            document.getElementById('area-input').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 16px;">Silakan pilih Shift terlebih dahulu.</div>';
+            document.getElementById('area-laporan').style.display = 'none';
+        }
+
+        function switchAreaTab(tab) {
+            document.getElementById('tab-input').classList.remove('active');
+            document.getElementById('tab-laporan').classList.remove('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            document.getElementById('area-input').style.display = tab === 'input' ? 'grid' : 'none';
+            document.getElementById('area-laporan').style.display = tab === 'laporan' ? 'block' : 'none';
+
+            // Tampilkan search bar cuma kalau lagi di tab input dan shift udah dipilih
+            const shiftVal = document.getElementById('shift-select').value;
+            if(shiftVal) {
+                document.getElementById('search-grid').style.display = tab === 'input' ? 'block' : 'none';
+            }
+        }
+
+	function filterGridAbsen() {
+            const keyword = document.getElementById('search-grid').value.toLowerCase();
+            const cards = document.querySelectorAll('.emp-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.emp-name').innerText.toLowerCase();
+                // Kalau namanya cocok, tampilkan. Kalau nggak, sembunyikan.
+                if(name.includes(keyword)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // ================= LOAD DATA & DASHBOARD =================
+        function loadDataUtama() {
             db.collection("master_karyawan").get().then((snap) => {
                 masterKaryawan = [];
-                snap.forEach(doc => { let d = doc.data(); d.id = doc.id; masterKaryawan.push(d); });
+                let t_op=0, t_tetap=0, t_yayasan=0;
+                let s1_inj=0, s1_assy=0, s2_inj=0, s2_assy=0, s3_inj=0, s3_assy=0;
+                
+                snap.forEach(doc => { 
+                    let d = doc.data(); d.id = doc.id; masterKaryawan.push(d); 
+                    
+                    if(d.shift !== "Rolling") {
+                        t_op++;
+                        if(d.status === "Tetap") t_tetap++; else if(d.status === "Yayasan") t_yayasan++;
+                        
+                        // Pisahkan hitungan per Area
+                        if(d.shift === "1") {
+                            if(d.wc === "Injection") s1_inj++; else if(d.wc === "Assembling") s1_assy++;
+                        } else if(d.shift === "2") {
+                            if(d.wc === "Injection") s2_inj++; else if(d.wc === "Assembling") s2_assy++;
+                        } else if(d.shift === "3") {
+                            if(d.wc === "Injection") s3_inj++; else if(d.wc === "Assembling") s3_assy++;
+                        }
+                    }
+                });
                 masterKaryawan.sort((a,b) => a.nama.localeCompare(b.nama));
-                refreshAll();
+                
+                document.getElementById('st-total').innerText = t_op;
+                document.getElementById('st-tetap').innerText = t_tetap;
+                document.getElementById('st-yayasan').innerText = t_yayasan;
+                
+                // Update text UI untuk Shift yang dipisah
+                document.getElementById('st-s1-inj').innerText = s1_inj;
+                document.getElementById('st-s1-assy').innerText = s1_assy;
+                document.getElementById('st-s2-inj').innerText = s2_inj;
+                document.getElementById('st-s2-assy').innerText = s2_assy;
+                document.getElementById('st-s3-inj').innerText = s3_inj;
+                document.getElementById('st-s3-assy').innerText = s3_assy;
+
+                loadGrafikBeranda();
             });
         }
-        loadDataMaster();
+        loadDataUtama();
 
-        // Aktifkan dropdown shift jika area sudah dipilih
-        document.getElementById('area-select').addEventListener('change', function() {
-            document.getElementById('shift-select').disabled = false;
-        });
-
-        // Trigger utama saat Filter berubah
-        function refreshAll() {
-            const area = document.getElementById('area-select').value;
-            const shift = document.getElementById('shift-select').value;
-            const tgl = document.getElementById('date-select').value;
+        let chartInj = null; let chartAssy = null;
+        function loadGrafikBeranda() {
+            const prefix = new Date().toISOString().substring(0, 7); // yyyy-mm
             
-            if(!area || !shift || !tgl) return;
+            // Tangkap nilai shift yang dipilih
+            const filterDropdown = document.getElementById('filter-shift-grafik');
+            const filterShift = filterDropdown ? filterDropdown.value : "Semua";
 
-            // Tarik data absen sebulan full untuk Area ini
-            const prefixBulan = tgl.substring(0, 7); // yyyy-mm
-            db.collection("data_absensi")
-              .where("work_center", "==", area)
-              .get().then((snap) => {
-                  currentMonthData = [];
-                  snap.forEach(doc => {
-                      const d = doc.data();
-                      if(d.tanggal_absen && d.tanggal_absen.startsWith(prefixBulan)) {
-                          currentMonthData.push(d);
-                      }
-                  });
-                  renderDailyList();
-                  renderLaporan();
-              });
+            db.collection("data_absensi").get().then(snap => {
+                let cInj = {}, cAssy = {};
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    // Hitung kalau bulannya sama dan statusnya BUKAN Cuti
+                    if(d.tanggal_absen && d.tanggal_absen.startsWith(prefix) && d.keterangan !== 'C') {
+                        
+                        // LOGIKA FILTER: Skip data kalau shiftnya beda sama yang dipilih
+                        if (filterShift !== "Semua" && d.shift !== filterShift && d.shift !== "Rolling") return;
+
+                        if(d.work_center === 'Injection') cInj[d.nama] = (cInj[d.nama] || 0) + 1;
+                        if(d.work_center === 'Assembling') cAssy[d.nama] = (cAssy[d.nama] || 0) + 1;
+                    }
+                });
+
+                const topInj = Object.entries(cInj).sort((a,b)=>b[1]-a[1]).slice(0,5);
+                const topAssy = Object.entries(cAssy).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+                // Ganti judul grafik supaya dinamis sesuai filter
+                let judulInj = filterShift === "Semua" ? 'Top 5 Absen INJECTION' : `Top 5 INJECTION (Shift ${filterShift})`;
+                let judulAssy = filterShift === "Semua" ? 'Top 5 Absen ASSEMBLING' : `Top 5 ASSEMBLING (Shift ${filterShift})`;
+
+                drawChart('chartInj', judulInj, topInj, '#1e293b', chartInj, c => chartInj = c);
+                drawChart('chartAssy', judulAssy, topAssy, '#2563eb', chartAssy, c => chartAssy = c);
+            });
         }
 
-        // ================= VIEW 1: RENDER LIST ABSEN HARIAN =================
-        function renderDailyList() {
-            const area = document.getElementById('area-select').value;
+        function drawChart(canvasId, title, dataArr, color, existChart, saveChart) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if(existChart) existChart.destroy();
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels: dataArr.length ? dataArr.map(i=>i[0]) : ['Aman'], 
+                    datasets: [{ data: dataArr.length ? dataArr.map(i=>i[1]) : [0], backgroundColor: color, borderRadius: 6 }] 
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: title, font: {size: 15} }, legend: {display:false} }, scales: { y: { beginAtZero:true, ticks:{stepSize:1} } } }
+            });
+            saveChart(chart);
+        }
+
+        // ================= LOGIKA AREA (INPUT & LAPORAN) =================
+        function refreshArea() {
             const shift = document.getElementById('shift-select').value;
             const tgl = document.getElementById('date-select').value;
-            const container = document.getElementById('view-absen');
+            if(!shift || !tgl) return;
 
-            if(!area || !shift) return;
+            document.getElementById('area-tabs').style.display = 'inline-flex';
+            switchAreaTab('input'); // Default ke tab input
 
+            const prefix = tgl.substring(0, 7);
+            db.collection("data_absensi").where("work_center", "==", activeArea).get().then(snap => {
+                currentMonthData = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    if(d.tanggal_absen && d.tanggal_absen.startsWith(prefix)) currentMonthData.push(d);
+                });
+                renderGridAbsen(shift, tgl);
+                renderTabelLaporan(shift);
+            });
+        }
+
+        function renderGridAbsen(shift, tgl) {
+            const container = document.getElementById('area-input');
             container.innerHTML = '';
             
-            const filteredEmp = masterKaryawan.filter(k => k.wc === area && (k.shift === shift || k.shift === "Rolling"));
+            const emps = masterKaryawan.filter(k => k.wc === activeArea && (k.shift === shift || k.shift === "Rolling"));
+            if(emps.length === 0) return container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted);">Tidak ada karyawan.</div>';
 
-            if(filteredEmp.length === 0) {
-                container.innerHTML = `<div class="empty-state"><p>Tidak ada karyawan di Area & Shift ini.</p></div>`;
-                return;
-            }
-
-            filteredEmp.forEach(k => {
-                const absenHariIni = currentMonthData.find(a => a.id_karyawan === k.id && a.tanggal_absen === tgl);
+            emps.forEach(k => {
+                const absen = currentMonthData.find(a => a.id_karyawan === k.id && a.tanggal_absen === tgl);
+                let btnCls = 's-hadir', btnTxt = 'Hadir ✅';
                 
-                let btnClass = 'status-hadir';
-                let btnText = 'Hadir ✅';
-                
-                if (absenHariIni) {
-                    const st = absenHariIni.keterangan;
-                    if(st === 'A') { btnClass = 'status-alpha'; btnText = 'Alpha'; }
-                    else if(st === 'I') { btnClass = 'status-izin'; btnText = 'Izin'; }
-                    else if(st === 'SD') { btnClass = 'status-sd'; btnText = 'Sakit (D)'; }
-                    else if(st === 'SB') { btnClass = 'status-sb'; btnText = 'Sakit (B)'; }
-                    else if(st === 'C') { btnClass = 'status-cuti'; btnText = 'Cuti'; }
-                    else if(st === 'I½' || st === 'S½') { 
-                        btnClass = 'status-setengah'; 
-                        btnText = `${st} (Plg: ${absenHariIni.jam_pulang})`; 
-                    }
+                if(absen) {
+                    const st = absen.keterangan;
+                    if(st === 'A') { btnCls = 's-alpha'; btnTxt = 'Alpha'; }
+                    else if(st === 'I') { btnCls = 's-izin'; btnTxt = 'Izin'; }
+                    else if(st === 'SD') { btnCls = 's-sd'; btnTxt = 'Sakit (D)'; }
+                    else if(st === 'SB') { btnCls = 's-sb'; btnTxt = 'Sakit (B)'; }
+                    else if(st === 'C') { btnCls = 's-cuti'; btnTxt = 'Cuti'; }
+                    else if(st.includes('½')) { btnCls = 's-setengah'; btnTxt = `${st} (Plg: ${absen.jam_pulang})`; }
                 }
 
-                const initial = k.nama.substring(0,2).toUpperCase();
-                const badgeRolling = k.shift === "Rolling" ? `<span style="background:#fde047; color:#854d0e; padding:2px 5px; border-radius:4px; font-weight:bold;">Mandor</span>` : `Shift ${k.shift}`;
-
-                const card = document.createElement('div');
-                card.className = 'employee-card';
-                card.innerHTML = `
-                    <div class="emp-info">
-                        <div class="emp-avatar">${initial}</div>
-                        <div class="emp-details">
-                            <span class="emp-name">${k.nama}</span>
-                            <span class="emp-meta">${badgeRolling} • ${k.status}</span>
+                container.innerHTML += `
+                    <div class="emp-card">
+                        <div class="emp-info">
+                            <div class="avatar">${k.nama.substring(0,2).toUpperCase()}</div>
+                            <div>
+                                <div class="emp-name">${k.nama}</div>
+                                <span class="emp-badge">${k.shift === 'Rolling' ? 'Shift Fleksibel' : 'Shift '+k.shift}</span>
+                            </div>
                         </div>
-                    </div>
-                    <button class="status-btn ${btnClass}" onclick="openSheet('${k.id}', '${k.nama}')">${btnText}</button>
-                `;
-                container.appendChild(card);
+                        <button class="status-btn ${btnCls}" onclick="openModal('${k.id}', '${k.nama}')">${btnTxt}</button>
+                    </div>`;
             });
         }
 
-        // ================= LOGIKA BOTTOM SHEET (POP UP ABSEN) =================
-        function openSheet(id, nama) {
-            selectedEmpId = id; selectedEmpName = nama;
-            document.getElementById('sheet-emp-name').innerText = `Update Status: ${nama}`;
-            document.getElementById('sheet').classList.add('active');
-            document.getElementById('sheet-overlay').classList.add('active');
+        function renderTabelLaporan(shift) {
+            const tbRekap = document.getElementById('body-rekap');
+            const tbHarian = document.getElementById('body-harian');
+            tbRekap.innerHTML = ''; tbHarian.innerHTML = '';
+
+            const emps = masterKaryawan.filter(k => k.wc === activeArea && (k.shift === shift || k.shift === "Rolling"));
+
+            emps.forEach(k => {
+                let trHarian = `<tr><td class="name-col">${k.nama}</td>`;
+                let cells = {}; for(let i=1;i<=31;i++) cells[i]={txt:'', bg:''};
+                let cA=0, cI=0, cSD=0, cSB=0, cCuti=0, cI2=0, cS2=0;
+
+                currentMonthData.filter(a => a.id_karyawan === k.id).forEach(ab => {
+                    const st = ab.keterangan;
+                    if(st==='A') cA++; else if(st==='I') cI++; else if(st==='SD') cSD++; else if(st==='SB') cSB++; else if(st==='C') cCuti++; else if(st==='I½') cI2++; else if(st==='S½') cS2++;
+                    
+                    const tgl = parseInt(ab.tanggal_absen.split('-')[2]);
+                    cells[tgl].txt = ab.jam_pulang ? `${st}<br><span style="font-size:10px;">(${ab.jam_pulang})</span>` : st;
+                    if(st==='A') cells[tgl].bg = 'var(--c-alpha)'; else if(st==='I') cells[tgl].bg = 'var(--c-izin)'; else if(st==='SD') cells[tgl].bg = 'var(--c-sd)'; else if(st==='SB') cells[tgl].bg = 'var(--c-sb)'; else if(st==='C') cells[tgl].bg = 'var(--c-cuti)'; else if(st.includes('½')) cells[tgl].bg = 'var(--c-setengah)';
+                });
+
+                for(let i=1;i<=31;i++) {
+                    let style = cells[i].bg ? `background:${cells[i].bg}; color:${cells[i].bg.includes('setengah') ? '#000' : '#fff'}; font-weight:bold;` : '';
+                    trHarian += `<td style="${style}">${cells[i].txt}</td>`;
+                }
+                trHarian += `</tr>`; tbHarian.innerHTML += trHarian;
+
+                if(cA||cI||cSD||cSB||cCuti||cI2||cS2) {
+                    tbRekap.innerHTML += `<tr><td class="name-col">${k.nama}</td><td style="color:var(--c-alpha);font-weight:bold;">${cA||'-'}</td><td style="color:var(--c-izin);font-weight:bold;">${cI||'-'}</td><td style="color:var(--c-sd);font-weight:bold;">${cSD||'-'}</td><td style="color:var(--c-sb);font-weight:bold;">${cSB||'-'}</td><td style="color:var(--c-cuti);font-weight:bold;">${cCuti||'-'}</td><td style="color:#b45309;font-weight:bold;">${cI2?cI2+'x':'-'}</td><td style="color:#b45309;font-weight:bold;">${cS2?cS2+'x':'-'}</td></tr>`;
+                }
+            });
+            if(tbRekap.innerHTML === '') tbRekap.innerHTML = '<tr><td colspan="8" style="padding:20px; color:var(--text-muted);">Belum ada rekap mangkir bulan ini.</td></tr>';
         }
 
-        function closeSheet() {
-            document.getElementById('sheet').classList.remove('active');
-            document.getElementById('sheet-overlay').classList.remove('active');
-            selectedEmpId = null;
+        // ================= LOGIKA MODAL INPUT =================
+        function openModal(id, nama) {
+            selectedEmpId = id;
+            document.getElementById('modal-title').innerText = `Status Absen: ${nama}`;
+            document.getElementById('modal-status').classList.add('active');
         }
+        function closeModal() { document.getElementById('modal-status').classList.remove('active'); selectedEmpId = null; }
 
-        function saveAbsen(status, colorStr) {
+        function saveAbsen(status, color) {
             const tgl = document.getElementById('date-select').value;
             const emp = masterKaryawan.find(k => k.id === selectedEmpId);
             
-            let jamPulang = null;
-            if (status === 'I½' || status === 'S½') {
-                jamPulang = prompt(`Jam berapa ${emp.nama} pulang? (Contoh: 14.30)`);
-                if (!jamPulang || jamPulang.trim() === "") {
-                    showToast("Input dibatalkan", "var(--text-muted)");
-                    return;
-                }
+            let jp = null;
+            if(status.includes('½')) {
+                jp = prompt(`Jam berapa ${emp.nama} pulang? (cth: 14.30)`);
+                if(!jp) return showToast("Input dibatalkan", "var(--text-muted)");
             }
 
-            const docId = `${selectedEmpId}_${tgl}`;
-            let dataSave = {
-                id_karyawan: emp.id, nama: emp.nama, work_center: emp.wc, shift: emp.shift,
-                keterangan: status, tanggal_absen: tgl, timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            if(jamPulang) dataSave.jam_pulang = jamPulang;
+            let data = { id_karyawan: emp.id, nama: emp.nama, work_center: emp.wc, shift: emp.shift, keterangan: status, tanggal_absen: tgl, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+            if(jp) data.jam_pulang = jp;
 
-            db.collection("data_absensi").doc(docId).set(dataSave).then(() => {
-                closeSheet();
-                showToast(`Absen ${status} disimpan!`, colorStr);
-                refreshAll(); 
+            db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
+                closeModal(); showToast(`Absen tersimpan!`, color); refreshArea();
             });
         }
 
         function deleteAbsen() {
-            const tgl = document.getElementById('date-select').value;
-            const docId = `${selectedEmpId}_${tgl}`;
-            db.collection("data_absensi").doc(docId).delete().then(() => {
-                closeSheet();
-                showToast(`Status dikembalikan ke Hadir ✅`, "var(--c-hadir)");
-                refreshAll();
+            db.collection("data_absensi").doc(`${selectedEmpId}_${document.getElementById('date-select').value}`).delete().then(() => {
+                closeModal(); showToast(`Status jadi Hadir ✅`, "var(--c-hadir)"); refreshArea();
             });
         }
 
-        // ================= VIEW 2: RENDER LAPORAN BULANAN =================
-        function renderLaporan() {
-            const area = document.getElementById('area-select').value;
-            const shift = document.getElementById('shift-select').value;
-            
-            const tbodyRekap = document.getElementById('body-rekap');
-            const tbodyHarian = document.getElementById('body-harian');
-            tbodyRekap.innerHTML = ''; tbodyHarian.innerHTML = '';
+        // ================= LOGIKA KELOLA KARYAWAN =================
+        let editKaryawanId = null; // Buat nyimpen ID yang lagi diedit
 
-            if(!area || !shift) {
-                tbodyRekap.innerHTML = '<tr><td colspan="8">Pilih Area & Shift dulu di atas.</td></tr>';
-                return;
-            }
-
-            const filteredEmp = masterKaryawan.filter(k => k.wc === area && (k.shift === shift || k.shift === "Rolling"));
-
-            filteredEmp.forEach(k => {
-                // 1. BUAT BARIS TABEL 1-31
-                let trHarian = document.createElement('tr');
-                trHarian.innerHTML = `<td class="name-col">${k.nama}</td>`;
-                
-                let cells = {};
-                for(let i=1; i<=31; i++) cells[i] = { text: '', color: '' };
-
-                // Hitungan Rekap
-                let cA=0, cI=0, cSD=0, cSB=0, cCuti=0, cI2=0, cS2=0;
-
-                const absenKaryawan = currentMonthData.filter(a => a.id_karyawan === k.id);
-                absenKaryawan.forEach(ab => {
-                    if(ab.keterangan === 'A') cA++; else if(ab.keterangan === 'I') cI++;
-                    else if(ab.keterangan === 'SD') cSD++; else if(ab.keterangan === 'SB') cSB++;
-                    else if(ab.keterangan === 'C') cCuti++; 
-                    else if(ab.keterangan === 'I½') cI2++; else if(ab.keterangan === 'S½') cS2++;
-
-                    const tglAngka = parseInt(ab.tanggal_absen.split('-')[2]);
-                    let cellText = ab.keterangan;
-                    if(ab.jam_pulang) cellText += `<br><span style="font-size:9px; color:#b45309;">(${ab.jam_pulang})</span>`;
-                    
-                    let bgColor = '';
-                    if(ab.keterangan === 'A') bgColor = 'var(--c-alpha)'; else if(ab.keterangan === 'I') bgColor = 'var(--c-izin)';
-                    else if(ab.keterangan === 'SD') bgColor = 'var(--c-sd)'; else if(ab.keterangan === 'SB') bgColor = 'var(--c-sb)';
-                    else if(ab.keterangan === 'C') bgColor = 'var(--c-cuti)'; else if(ab.keterangan.includes('½')) bgColor = 'var(--c-setengah)';
-
-                    cells[tglAngka] = { text: cellText, color: bgColor };
-                });
-
-                for(let i=1; i<=31; i++) {
-                    let td = document.createElement('td');
-                    if(cells[i].text) {
-                        td.innerHTML = `<strong>${cells[i].text}</strong>`;
-                        td.style.backgroundColor = cells[i].color;
-                        if(!cells[i].color.includes('setengah')) td.style.color = 'white';
-                    }
-                    trHarian.appendChild(td);
-                }
-                tbodyHarian.appendChild(trHarian);
-
-                // 2. BUAT BARIS TABEL REKAP 
-                if(cA>0 || cI>0 || cSD>0 || cSB>0 || cCuti>0 || cI2>0 || cS2>0) {
-                    let trRekap = document.createElement('tr');
-                    trRekap.innerHTML = `
-                        <td class="name-col">${k.nama}</td>
-                        <td style="color:var(--c-alpha); font-weight:bold;">${cA || '-'}</td>
-                        <td style="color:var(--c-izin); font-weight:bold;">${cI || '-'}</td>
-                        <td style="color:var(--c-sd); font-weight:bold;">${cSD || '-'}</td>
-                        <td style="color:var(--c-sb); font-weight:bold;">${cSB || '-'}</td>
-                        <td style="color:var(--c-cuti); font-weight:bold;">${cCuti || '-'}</td>
-                        <td style="color:#b45309; font-weight:bold;">${cI2 ? cI2+'x' : '-'}</td>
-                        <td style="color:#b45309; font-weight:bold;">${cS2 ? cS2+'x' : '-'}</td>
-                    `;
-                    tbodyRekap.appendChild(trRekap);
-                }
-            });
-            
-            if(tbodyRekap.innerHTML === '') tbodyRekap.innerHTML = '<tr><td colspan="8" style="padding:15px; color:var(--text-muted);">Aman! Belum ada yang mangkir bulan ini.</td></tr>';
-        }
-
-        // ================= VIEW 3: KELOLA KARYAWAN =================
-        function renderMasterKaryawan() {
-            const tbody = document.getElementById('body-master-karyawan');
-            const keyword = document.getElementById('search-karyawan').value.toLowerCase();
-            tbody.innerHTML = '';
-            
+        function renderTabelMaster() {
+            const tb = document.getElementById('body-master');
+            const kw = document.getElementById('search-karyawan').value.toLowerCase();
+            tb.innerHTML = '';
             masterKaryawan.forEach(k => {
-                if(k.nama.toLowerCase().includes(keyword)) {
-                    tbody.innerHTML += `
-                    <tr>
-                        <td style="font-weight:bold;">${k.nama}<br><small style="color:var(--text-muted);font-weight:normal;">${k.status}</small></td>
+                if(k.nama.toLowerCase().includes(kw)) {
+                    tb.innerHTML += `<tr>
+                        <td style="text-align:left; font-weight:600;">${k.nama}</td>
                         <td>${k.wc}</td>
-                        <td>${k.shift}</td>
-                        <td><button onclick="hapusKaryawan('${k.id}', '${k.nama}')" style="background:var(--c-alpha); color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Hapus</button></td>
+                        <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:6px; font-weight:600; font-size:12px;">${k.shift}</span></td>
+                        <td>${k.status}</td>
+                        <td>
+                            <button onclick="editKaryawan('${k.id}')" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer; margin-right:5px;">Edit</button>
+                            <button onclick="hapusKaryawan('${k.id}', '${k.nama}')" style="background:var(--c-alpha); color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:bold; cursor:pointer;">Hapus</button>
+                        </td>
                     </tr>`;
                 }
             });
         }
-        function filterKaryawanList() { renderMasterKaryawan(); }
+        function filterKaryawan() { renderTabelMaster(); }
+        
+        function simpanKaryawan() {
+            const data = { 
+                nama: document.getElementById('new-nama').value, 
+                wc: document.getElementById('new-area').value, 
+                shift: document.getElementById('new-shift').value, 
+                status: document.getElementById('new-status').value 
+            };
+            if(!data.nama || !data.wc || !data.shift || !data.status) return alert("Lengkapi data!");
 
-        function tambahKaryawan() {
-            const nama = document.getElementById('new-nama').value;
-            const area = document.getElementById('new-area').value;
-            const shift = document.getElementById('new-shift').value;
-            const status = document.getElementById('new-status').value;
-            
-            if(!nama || !area || !shift || !status) return alert("Lengkapi semua isian form!");
-
-            db.collection("master_karyawan").add({ nama: nama, wc: area, shift: shift, status: status }).then(() => {
-                showToast("Karyawan Baru Disimpan!", "var(--c-hadir)");
-                document.getElementById('new-nama').value = '';
-                loadDataMaster(); 
-            });
-        }
-        function hapusKaryawan(id, nama) {
-            if(confirm(`Yakin hapus ${nama}?`)) {
-                db.collection("master_karyawan").doc(id).delete().then(() => { showToast(`${nama} dihapus!`, "var(--c-sb)"); loadDataMaster(); });
+            if (editKaryawanId) {
+                // Proses Update
+                db.collection("master_karyawan").doc(editKaryawanId).update(data).then(() => {
+                    showToast("Data Karyawan Diupdate!", "var(--c-hadir)");
+                    batalEdit(); // Balikin ke mode tambah
+                    loadDataUtama(); setTimeout(renderTabelMaster, 1000);
+                });
+            } else {
+                // Proses Tambah Baru
+                db.collection("master_karyawan").add(data).then(() => {
+                    showToast("Karyawan Baru Disimpan!", "var(--c-hadir)");
+                    document.getElementById('new-nama').value = ''; 
+                    loadDataUtama(); setTimeout(renderTabelMaster, 1000);
+                });
             }
         }
 
+        function editKaryawan(id) {
+            const k = masterKaryawan.find(x => x.id === id);
+            if(!k) return;
+            
+            editKaryawanId = id; // Set ID yang mau diedit
+            
+            // Masukin data ke form atas
+            document.getElementById('new-nama').value = k.nama;
+            document.getElementById('new-area').value = k.wc;
+            document.getElementById('new-shift').value = k.shift;
+            document.getElementById('new-status').value = k.status;
+
+            // Ganti UI Form jadi Mode Edit
+            document.getElementById('form-karyawan-title').innerText = "Edit Data Karyawan";
+            document.getElementById('btn-save-karyawan').innerText = "Update Data";
+            document.getElementById('btn-save-karyawan').style.background = "#f59e0b"; // Warna oren
+            document.getElementById('btn-cancel-edit').style.display = "block";
+        }
+
+        function batalEdit() {
+            editKaryawanId = null;
+            document.getElementById('new-nama').value = '';
+            document.getElementById('new-area').value = '';
+            document.getElementById('new-shift').value = '';
+            document.getElementById('new-status').value = '';
+
+            // Balikin UI Form ke Mode Tambah
+            document.getElementById('form-karyawan-title').innerText = "Tambah Karyawan Baru";
+            document.getElementById('btn-save-karyawan').innerText = "Simpan";
+            document.getElementById('btn-save-karyawan').style.background = "var(--primary)";
+            document.getElementById('btn-cancel-edit').style.display = "none";
+        }
+        
+        function hapusKaryawan(id, nama) {
+            if(confirm(`Yakin hapus ${nama}?`)) db.collection("master_karyawan").doc(id).delete().then(() => { showToast(`${nama} dihapus!`, "var(--c-sb)"); loadDataUtama(); setTimeout(renderTabelMaster, 1000); });
+        }
+
         function showToast(msg, color) {
-            const t = document.getElementById('custom-toast');
+            const t = document.getElementById('toast');
             t.innerText = msg; t.style.backgroundColor = color;
-            t.style.color = (color === 'var(--c-setengah)' || color === 'var(--c-hadir)') ? '#000' : '#fff';
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2500);
+            t.style.color = color.includes('setengah') ? '#000' : '#fff';
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500);
         }
     </script>
 </body>

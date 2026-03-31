@@ -959,6 +959,107 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--bg-card-2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+        /* ─── CUTI FEATURE ─── */
+        .cuti-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .cuti-table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: auto;
+            margin-bottom: 24px;
+        }
+
+        .cuti-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .cuti-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cuti-sisa-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 100px;
+        }
+
+        .sisa-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .sisa-aman   { background: rgba(0,255,157,0.12);  color: var(--c-hadir); border: 1px solid rgba(0,255,157,0.25); }
+        .sisa-mepet  { background: rgba(255,165,2,0.15);  color: #ffbe3d;        border: 1px solid rgba(255,165,2,0.3); }
+        .sisa-kritis { background: rgba(255,71,87,0.18);  color: #ff6b78;        border: 1px solid rgba(255,71,87,0.3); }
+        .sisa-habis  { background: rgba(255,71,87,0.25);  color: #ff4757;        border: 1px solid rgba(255,71,87,0.5); animation: pulse-habis 2s ease-in-out infinite; }
+
+        @keyframes pulse-habis {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.3); }
+            50%      { box-shadow: 0 0 0 5px rgba(255,71,87,0); }
+        }
+
+        .cuti-empty {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-faint);
+        }
+
+        .year-chip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--c-cuti);
+            background: rgba(46,213,115,0.1);
+            border: 1px solid rgba(46,213,115,0.25);
+            padding: 5px 14px;
+            border-radius: 20px;
+        }
+
+        .cuti-loading-row td {
+            padding: 14px 12px;
+        }
+
+        .legend-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -991,6 +1092,9 @@
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-section">Admin</div>
+        <div class="nav-item" id="nav-cuti" onclick="openView('cuti')">
+            <div class="nav-icon">🌴</div> Rekap Cuti
+        </div>
         <div class="nav-item" id="nav-karyawan" onclick="openView('karyawan')">
             <div class="nav-icon">👥</div> Kelola Karyawan
         </div>
@@ -1148,6 +1252,91 @@
             </div>
         </div>
 
+
+
+        <!-- ═══ VIEW CUTI ═══ -->
+        <div id="view-cuti" style="display:none;">
+
+            <div class="dash-header">
+                <div style="font-size:15px; font-weight:700; color:var(--text-muted);">Rekap Sisa Cuti Tahunan — Karyawan Tetap</div>
+                <div class="year-chip" id="cuti-year-badge">🌴 TAHUN 2026</div>
+            </div>
+
+            <div class="filter-panel" style="margin-bottom:20px;">
+                <div class="filter-label">Filter</div>
+                <select class="form-ctrl" id="cuti-area" onchange="loadCutiRekap()">
+                    <option value="">Semua Area</option>
+                    <option value="Injection">Injection</option>
+                    <option value="Assembling">Assembling</option>
+                </select>
+                <select class="form-ctrl" id="cuti-shift" onchange="loadCutiRekap()">
+                    <option value="">Semua Shift</option>
+                    <option value="1">Shift 1</option>
+                    <option value="2">Shift 2</option>
+                    <option value="3">Shift 3</option>
+                    <option value="Rolling">Rolling</option>
+                </select>
+                <input type="text" class="form-ctrl" id="cuti-search" placeholder="🔍 Cari nama..." oninput="filterCutiTable()" style="max-width:220px;">
+            </div>
+
+            <div class="cuti-stats-grid">
+                <div class="stat-card" style="--card-accent:var(--primary);">
+                    <div class="stat-label">Karyawan Tetap</div>
+                    <div class="stat-value" id="cs-total">—</div>
+                </div>
+                <div class="stat-card" style="--card-accent:var(--accent);">
+                    <div class="stat-label">Total Jatah Lalu Dibawa</div>
+                    <div class="stat-value" id="cs-lalu">—</div>
+                </div>
+                <div class="stat-card" style="--card-accent:var(--c-cuti);">
+                    <div class="stat-label">Total Cuti Terpakai</div>
+                    <div class="stat-value" id="cs-terpakai">—</div>
+                </div>
+                <div class="stat-card" style="--card-accent:var(--c-hadir);">
+                    <div class="stat-label">Total Sisa Akhir</div>
+                    <div class="stat-value" id="cs-sisa">—</div>
+                </div>
+                <div class="stat-card" style="--card-accent:var(--c-alpha);">
+                    <div class="stat-label">Habis / Kritis (≤2)</div>
+                    <div class="stat-value" id="cs-kritis">—</div>
+                </div>
+            </div>
+
+            <div class="legend-row">
+                <span style="font-size:11px;font-weight:700;color:var(--text-faint);letter-spacing:0.5px;text-transform:uppercase;">Keterangan:</span>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--c-hadir);"></div> Aman (sisa ≥ 7)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ffbe3d;"></div> Mepet (sisa 3–6)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ff6b78;"></div> Kritis (sisa 1–2)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ff4757;"></div> Habis (sisa 0)</div>
+            </div>
+
+            <div class="cuti-table-wrap">
+                <table id="cuti-table" style="min-width:780px;">
+                    <thead>
+                        <tr>
+                            <th style="width:44px;">#</th>
+                            <th style="text-align:left;min-width:180px;">Nama Karyawan</th>
+                            <th>Area</th>
+                            <th>Shift</th>
+                            <th title="Jatah cuti tahun ini">Jatah Ini</th>
+                            <th title="Sisa cuti yang dibawa dari tahun lalu" style="color:var(--accent);">+ Sisa Lalu</th>
+                            <th title="Total jatah = Jatah ini + Sisa lalu">Total</th>
+                            <th>Terpakai</th>
+                            <th style="min-width:140px;">Sisa Akhir</th>
+                            <th style="min-width:160px;">Penggunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuti-tbody">
+                        <tr>
+                            <td colspan="8" style="text-align:center;padding:40px;color:var(--text-faint);">
+                                Pilih filter atau tunggu data dimuat...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- ═══ VIEW KARYAWAN ═══ -->
         <div id="view-karyawan" style="display:none;">
             <div class="form-card">
@@ -1171,6 +1360,10 @@
                         <option value="Tetap">Tetap</option>
                         <option value="Yayasan">Yayasan</option>
                     </select>
+                    <div style="display:flex;flex-direction:column;gap:4px;min-width:130px;">
+                        <label style="font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-faint);">Sisa Cuti Lalu</label>
+                        <input type="number" class="form-ctrl" id="new-sisa-lalu" placeholder="0" min="0" max="24" value="0" style="text-align:center;">
+                    </div>
                     <button id="btn-save-karyawan" class="btn-primary" onclick="simpanKaryawan()">Simpan</button>
                     <button id="btn-cancel-edit" class="btn-secondary" onclick="batalEdit()">Batal</button>
                 </div>
@@ -1186,7 +1379,9 @@
                         <thead>
                             <tr>
                                 <th style="text-align:left;">Nama</th>
-                                <th>Area</th><th>Shift</th><th>Status</th><th>Aksi</th>
+                                <th>Area</th><th>Shift</th><th>Status</th>
+                                <th title="Sisa cuti yang dibawa dari tahun sebelumnya">Sisa Cuti Lalu</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="body-master"></tbody>
@@ -1282,7 +1477,7 @@
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById(activeId).classList.add('active');
         document.getElementById('topbar-title').innerText = title;
-        ['view-beranda', 'view-area', 'view-karyawan'].forEach(id => {
+        ['view-beranda', 'view-area', 'view-cuti', 'view-karyawan'].forEach(id => {
             document.getElementById(id).style.display = 'none';
         });
     }
@@ -1292,6 +1487,12 @@
             updateNav('nav-beranda', 'Dashboard');
             document.getElementById('view-beranda').style.display = 'block';
             loadDataUtama();
+        } else if (viewName === 'cuti') {
+            updateNav('nav-cuti', 'Rekap Cuti Tahunan');
+            document.getElementById('view-cuti').style.display = 'block';
+            const tahun = new Date().getFullYear();
+            document.getElementById('cuti-year-badge').textContent = '🌴 TAHUN ' + tahun;
+            loadCutiRekap();
         } else if (viewName === 'karyawan') {
             const pin = prompt("🔒 PIN HRD / Mandor:");
             if (pin !== "111111") return showToast("PIN salah!", "#ff4757");
@@ -1586,6 +1787,7 @@
         };
         if (jp) data.jam_pulang = jp;
 
+        if (status === 'C') invalidateCutiCache();
         db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
             closeModal();
             showToast(`${emp.nama} — ${status} tersimpan`, color);
@@ -1594,6 +1796,7 @@
     }
 
     function deleteAbsen() {
+        invalidateCutiCache();
         db.collection("data_absensi").doc(`${selectedEmpId}_${document.getElementById('date-select').value}`).delete().then(() => {
             closeModal();
             showToast("Status dikembalikan ke Hadir ✅", "#00ff9d");
@@ -1608,11 +1811,16 @@
         tb.innerHTML = '';
         masterKaryawan.forEach(k => {
             if (!k.nama.toLowerCase().includes(kw)) return;
+            const sisaLalu = k.sisa_cuti_lalu || 0;
+            const sisaLaluStyle = sisaLalu > 0
+                ? 'background:rgba(46,213,115,0.12);color:#2ed573;border:1px solid rgba(46,213,115,0.25);'
+                : 'background:rgba(255,255,255,0.04);color:var(--text-faint);';
             tb.innerHTML += `<tr>
                 <td style="text-align:left;font-weight:600;">${k.nama}</td>
                 <td>${k.wc}</td>
                 <td><span style="background:var(--primary-dim);color:#7eb4ff;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">Shift ${k.shift}</span></td>
                 <td><span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">${k.status}</span></td>
+                <td style="text-align:center;"><span style="${sisaLaluStyle}padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;">${sisaLalu} hari</span></td>
                 <td>
                     <button onclick="editKaryawan('${k.id}')" style="background:rgba(255,165,2,0.15);color:#ffa502;border:1px solid rgba(255,165,2,0.3);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;margin-right:5px;font-family:Outfit,sans-serif;">Edit</button>
                     <button onclick="hapusKaryawan('${k.id}','${k.nama}')" style="background:rgba(255,71,87,0.12);color:#ff6b78;border:1px solid rgba(255,71,87,0.25);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:Outfit,sans-serif;">Hapus</button>
@@ -1628,7 +1836,8 @@
             nama: document.getElementById('new-nama').value,
             wc: document.getElementById('new-area').value,
             shift: document.getElementById('new-shift').value,
-            status: document.getElementById('new-status').value
+            status: document.getElementById('new-status').value,
+            sisa_cuti_lalu: Number(document.getElementById('new-sisa-lalu').value) || 0
         };
         if (!data.nama || !data.wc || !data.shift || !data.status) return showToast("Lengkapi semua data!", "#ff4757");
 
@@ -1655,6 +1864,7 @@
         document.getElementById('new-area').value = k.wc;
         document.getElementById('new-shift').value = k.shift;
         document.getElementById('new-status').value = k.status;
+        document.getElementById('new-sisa-lalu').value = k.sisa_cuti_lalu || 0;
         document.getElementById('form-karyawan-title').innerText = "Edit Data Karyawan";
         document.getElementById('btn-save-karyawan').innerText = "Update";
         document.getElementById('btn-save-karyawan').style.background = "#f59e0b";
@@ -1664,6 +1874,7 @@
     function batalEdit() {
         editKaryawanId = null;
         ['new-nama', 'new-area', 'new-shift', 'new-status'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('new-sisa-lalu').value = 0;
         document.getElementById('form-karyawan-title').innerText = "Tambah Karyawan Baru";
         document.getElementById('btn-save-karyawan').innerText = "Simpan";
         document.getElementById('btn-save-karyawan').style.background = "";
@@ -1677,6 +1888,169 @@
                 loadDataUtama(); setTimeout(renderTabelMaster, 800);
             });
         }
+    }
+
+
+    // ─── CUTI FEATURE ───
+    const JATAH_CUTI = 12;
+    let _cutiRawData = []; // cache hasil query
+
+    function openCutiView() {
+        updateNav('nav-cuti', 'Rekap Cuti Tahunan');
+        document.getElementById('view-cuti').style.display = 'block';
+        const tahun = new Date().getFullYear();
+        document.getElementById('cuti-year-badge').textContent = '🌴 TAHUN ' + tahun;
+        loadCutiRekap();
+    }
+
+    async function loadCutiRekap() {
+        const area  = document.getElementById('cuti-area').value;
+        const shift = document.getElementById('cuti-shift').value;
+        const tahun = new Date().getFullYear().toString();
+
+        // Skeleton loading di stats
+        ['cs-total','cs-terpakai','cs-sisa','cs-kritis'].forEach(id => {
+            document.getElementById(id).innerHTML = '<div class="skeleton" style="width:50px;height:32px;border-radius:6px;"></div>';
+        });
+        document.getElementById('cuti-tbody').innerHTML =
+            '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-faint);">Memuat data...</td></tr>';
+
+        try {
+            // Filter karyawan: Tetap saja
+            let emps = masterKaryawan.filter(k => k.status === 'Tetap');
+            if (area)  emps = emps.filter(k => k.wc === area);
+            if (shift) emps = emps.filter(k => k.shift === shift || (shift !== 'Rolling' && k.shift === 'Rolling'));
+
+            // Query semua cuti tahun ini — pakai cache kalau sudah ada
+            if (_cutiRawData.length === 0) {
+                const snap = await db.collection('data_absensi')
+                    .where('keterangan', '==', 'C')
+                    .get();
+                _cutiRawData = [];
+                snap.forEach(doc => _cutiRawData.push(doc.data()));
+            }
+
+            // Hitung per karyawan untuk tahun ini
+            const cutiMap = {}; // { id_karyawan: count }
+            _cutiRawData.forEach(d => {
+                if (d.tanggal_absen && d.tanggal_absen.startsWith(tahun)) {
+                    cutiMap[d.id_karyawan] = (cutiMap[d.id_karyawan] || 0) + 1;
+                }
+            });
+
+            // Hitung stats (pakai sisa_cuti_lalu per karyawan)
+            let totalLalu = 0, totalTerpakai = 0, totalSisa = 0, totalKritis = 0;
+            emps.forEach(k => {
+                const sisaLalu = Number(k.sisa_cuti_lalu) || 0;
+                const total    = JATAH_CUTI + sisaLalu;
+                const terpakai = cutiMap[k.id] || 0;
+                const sisa     = Math.max(0, total - terpakai);
+                totalLalu     += sisaLalu;
+                totalTerpakai += terpakai;
+                totalSisa     += sisa;
+                if (sisa <= 2) totalKritis++;
+            });
+
+            // Update stats cards
+            document.getElementById('cs-total').textContent    = emps.length;
+            document.getElementById('cs-lalu').textContent     = totalLalu + ' hari';
+            document.getElementById('cs-terpakai').textContent = totalTerpakai;
+            document.getElementById('cs-sisa').textContent     = totalSisa;
+            document.getElementById('cs-kritis').textContent   = totalKritis;
+
+            // Render tabel — sort: sisa terkecil (paling darurat) di atas
+            emps.sort((a, b) => {
+                const sisaA = (JATAH_CUTI + (Number(a.sisa_cuti_lalu)||0)) - (cutiMap[a.id] || 0);
+                const sisaB = (JATAH_CUTI + (Number(b.sisa_cuti_lalu)||0)) - (cutiMap[b.id] || 0);
+                return sisaA - sisaB;
+            });
+
+            renderCutiTabel(emps, cutiMap);
+
+        } catch(err) {
+            console.error('loadCutiRekap error:', err);
+            document.getElementById('cuti-tbody').innerHTML =
+                '<tr><td colspan="8" style="text-align:center;padding:32px;color:#ff6b78;">⚠️ Gagal memuat data. Cek koneksi internet.</td></tr>';
+        }
+    }
+
+    function renderCutiTabel(emps, cutiMap) {
+        const tbody = document.getElementById('cuti-tbody');
+        tbody.innerHTML = '';
+
+        if (emps.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-faint);">Tidak ada karyawan tetap sesuai filter.</td></tr>';
+            return;
+        }
+
+        emps.forEach((k, idx) => {
+            const sisaLalu  = Number(k.sisa_cuti_lalu) || 0;
+            const totalJatah = JATAH_CUTI + sisaLalu;
+            const terpakai  = cutiMap[k.id] || 0;
+            const sisa      = Math.max(0, totalJatah - terpakai);
+            const pct       = Math.min(100, (terpakai / totalJatah) * 100);
+            const shiftLabel = k.shift === 'Rolling' ? 'Rolling' : 'Shift ' + k.shift;
+
+            // Warna progress bar & badge
+            let barColor, badgeClass, statusIcon;
+            if (sisa === 0)      { barColor = '#ff4757'; badgeClass = 'sisa-habis';  statusIcon = '🔴'; }
+            else if (sisa <= 2)  { barColor = '#ff6b78'; badgeClass = 'sisa-kritis'; statusIcon = '🟠'; }
+            else if (sisa <= 6)  { barColor = '#ffbe3d'; badgeClass = 'sisa-mepet';  statusIcon = '🟡'; }
+            else                 { barColor = '#00ff9d'; badgeClass = 'sisa-aman';   statusIcon = '🟢'; }
+
+            const sisaLaluDisplay = sisaLalu > 0
+                ? `<span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);background:rgba(0,212,255,0.08);padding:3px 8px;border-radius:5px;">+${sisaLalu}</span>`
+                : `<span style="color:var(--text-faint);font-size:12px;">—</span>`;
+
+            const tr = document.createElement('tr');
+            tr.dataset.nama = k.nama.toLowerCase();
+            tr.innerHTML = \`
+                <td style="text-align:center;color:var(--text-faint);font-size:12px;">\${idx + 1}</td>
+                <td style="text-align:left;font-weight:700;font-size:13px;">\${escapeHTMLCuti(k.nama)}</td>
+                <td style="font-size:12px;">
+                    <span style="background:\${k.wc === 'Injection' ? 'rgba(59,126,248,0.15)' : 'rgba(0,212,255,0.1)'};color:\${k.wc === 'Injection' ? '#7eb4ff' : 'var(--accent)'};padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">\${k.wc}</span>
+                </td>
+                <td style="font-size:12px;">
+                    <span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">\${shiftLabel}</span>
+                </td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text-muted);">\${JATAH_CUTI}</td>
+                <td style="text-align:center;">\${sisaLaluDisplay}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--text);">\${totalJatah}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:\${terpakai > 0 ? '#ffbe3d' : 'var(--text-faint)'};">\${terpakai}</td>
+                <td>
+                    <div class="cuti-sisa-cell">
+                        <span class="sisa-badge \${badgeClass}">\${statusIcon} \${sisa} hari</span>
+                    </div>
+                </td>
+                <td>
+                    <div style="padding:4px 0;">
+                        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-faint);margin-bottom:4px;">
+                            <span>\${terpakai} / \${totalJatah} hari</span><span>\${sisa} sisa</span>
+                        </div>
+                        <div class="cuti-progress-bar">
+                            <div class="cuti-progress-fill" style="width:\${pct}%;background:\${barColor};"></div>
+                        </div>
+                    </div>
+                </td>
+            \`;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterCutiTable() {
+        const kw = document.getElementById('cuti-search').value.toLowerCase();
+        document.querySelectorAll('#cuti-tbody tr').forEach(tr => {
+            if (!tr.dataset.nama) return;
+            tr.style.display = tr.dataset.nama.includes(kw) ? '' : 'none';
+        });
+    }
+
+    // Invalidate cache saat ada perubahan absensi (supaya cuti realtime)
+    function invalidateCutiCache() { _cutiRawData = []; }
+
+    function escapeHTMLCuti(s) {
+        const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"};
+        return String(s).replace(/[&<>"']/g, c => m[c]);
     }
 
     // ─── TOAST ───

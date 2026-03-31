@@ -2004,7 +2004,7 @@
 
             const tr = document.createElement('tr');
             tr.dataset.nama = k.nama.toLowerCase();
-            tr.innerHTML = \`
+            tr.innerHTML = `
                 <td style="text-align:center;color:var(--text-faint);font-size:12px;">\${idx + 1}</td>
                 <td style="text-align:left;font-weight:700;font-size:13px;">\${escapeHTMLCuti(k.nama)}</td>
                 <td style="font-size:12px;">
@@ -2032,7 +2032,7 @@
                         </div>
                     </div>
                 </td>
-            \`;
+            `;
             tbody.appendChild(tr);
         });
     }

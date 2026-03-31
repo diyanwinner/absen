@@ -960,6 +960,166 @@
         ::-webkit-scrollbar-thumb { background: var(--bg-card-2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
+        /* ─── CUTI BERSAMA ─── */
+        .cb-date-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .cb-date-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .cb-date-row .form-ctrl {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .btn-remove-date {
+            width: 32px; height: 32px;
+            background: rgba(255,71,87,0.1);
+            border: 1px solid rgba(255,71,87,0.25);
+            color: #ff6b78;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-remove-date:hover { background: rgba(255,71,87,0.2); }
+
+        .btn-add-date {
+            padding: 9px 16px;
+            background: rgba(59,126,248,0.1);
+            border: 1px dashed rgba(59,126,248,0.35);
+            color: #7eb4ff;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            align-self: flex-start;
+        }
+        .btn-add-date:hover { background: rgba(59,126,248,0.18); }
+
+        .cb-preview-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(0,255,157,0.2);
+            border-radius: 16px;
+            padding: 22px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .cb-preview-title {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--c-hadir);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cb-stat-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .cb-stat {
+            background: var(--bg-3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 18px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .cb-stat-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .cb-stat-lbl {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-faint);
+            margin-top: 4px;
+        }
+
+        .cb-date-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 18px;
+        }
+
+        .cb-date-chip {
+            background: rgba(46,213,115,0.1);
+            border: 1px solid rgba(46,213,115,0.25);
+            color: var(--c-cuti);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .btn-terapkan {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00c97a, #00a366);
+            color: #022c22;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+        }
+        .btn-terapkan:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-terapkan:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+
+        .cb-progress-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 14px 0 8px;
+            display: none;
+        }
+
+        .cb-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00c97a, #00d4ff);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .cb-progress-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            display: none;
+        }
+
         /* ─── ROLLOVER MODAL ─── */
         .rollover-overlay {
             position: fixed; inset: 0;
@@ -1221,6 +1381,9 @@
         <div class="nav-item" id="nav-cuti" onclick="openView('cuti')">
             <div class="nav-icon">🌴</div> Rekap Cuti
         </div>
+        <div class="nav-item" id="nav-cutibersama" onclick="openView('cutibersama')">
+            <div class="nav-icon">📅</div> Cuti Bersama
+        </div>
         <div class="nav-item" id="nav-karyawan" onclick="openView('karyawan')">
             <div class="nav-icon">👥</div> Kelola Karyawan
         </div>
@@ -1468,6 +1631,90 @@
             </div>
         </div>
 
+
+        <!-- ═══ VIEW CUTI BERSAMA ═══ -->
+        <div id="view-cutibersama" style="display:none;">
+
+            <div class="dash-header">
+                <div style="font-size:15px; font-weight:700; color:var(--text-muted);">Terapkan Cuti Bersama — Karyawan Tetap</div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-card-title">Setup Event Cuti Bersama</div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:18px;">
+                    <div>
+                        <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Nama Event</div>
+                        <input type="text" class="form-ctrl" id="cb-nama" placeholder="cth: Lebaran 2026, Natal 2026...">
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div>
+                            <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Area</div>
+                            <select class="form-ctrl" id="cb-area">
+                                <option value="">Semua Area</option>
+                                <option value="Injection">Injection</option>
+                                <option value="Assembling">Assembling</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Shift</div>
+                            <select class="form-ctrl" id="cb-shift">
+                                <option value="">Semua Shift</option>
+                                <option value="1">Shift 1</option>
+                                <option value="2">Shift 2</option>
+                                <option value="3">Shift 3</option>
+                                <option value="Rolling">Rolling</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;">Tanggal Cuti Bersama</div>
+                <div class="cb-date-list" id="cb-date-list"></div>
+                <button class="btn-add-date" onclick="cbTambahTanggal()">+ Tambah Tanggal</button>
+
+                <div style="margin-top:20px;">
+                    <button onclick="cbPreview()" style="padding:10px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#5090ff'" onmouseout="this.style.background='var(--primary)'">
+                        🔍 Preview Karyawan Terdampak
+                    </button>
+                </div>
+            </div>
+
+            <div class="cb-preview-card" id="cb-preview-card">
+                <div class="cb-preview-title">✅ Preview — Siap Diterapkan</div>
+
+                <div class="cb-stat-row">
+                    <div class="cb-stat">
+                        <div class="cb-stat-num" id="cb-st-karyawan">0</div>
+                        <div class="cb-stat-lbl">Karyawan</div>
+                    </div>
+                    <div class="cb-stat">
+                        <div class="cb-stat-num" id="cb-st-hari">0</div>
+                        <div class="cb-stat-lbl">Hari Cuti</div>
+                    </div>
+                    <div class="cb-stat">
+                        <div class="cb-stat-num" id="cb-st-record">0</div>
+                        <div class="cb-stat-lbl">Total Record</div>
+                    </div>
+                </div>
+
+                <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Tanggal yang akan diinput:</div>
+                <div class="cb-date-chips" id="cb-date-chips"></div>
+
+                <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Karyawan terdampak:</div>
+                <div style="background:var(--bg-3); border:1px solid var(--border); border-radius:10px; padding:14px; max-height:180px; overflow-y:auto; margin-bottom:18px; font-size:12px; color:var(--text-muted); line-height:2;">
+                    <span id="cb-emp-list"></span>
+                </div>
+
+                <div class="cb-progress-bar" id="cb-prog-bar"><div class="cb-progress-fill" id="cb-prog-fill" style="width:0%"></div></div>
+                <div class="cb-progress-text" id="cb-prog-text"></div>
+
+                <button class="btn-terapkan" id="btn-terapkan" onclick="cbTerapkan()">
+                    🌴 Terapkan Cuti Bersama Sekarang
+                </button>
+            </div>
+        </div>
+
         <!-- ═══ VIEW KARYAWAN ═══ -->
         <div id="view-karyawan" style="display:none;">
             <div class="form-card">
@@ -1658,7 +1905,7 @@
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById(activeId).classList.add('active');
         document.getElementById('topbar-title').innerText = title;
-        ['view-beranda', 'view-area', 'view-cuti', 'view-karyawan'].forEach(id => {
+        ['view-beranda', 'view-area', 'view-cuti', 'view-cutibersama', 'view-karyawan'].forEach(id => {
             document.getElementById(id).style.display = 'none';
         });
     }
@@ -1668,6 +1915,10 @@
             updateNav('nav-beranda', 'Dashboard');
             document.getElementById('view-beranda').style.display = 'block';
             loadDataUtama();
+        } else if (viewName === 'cutibersama') {
+            updateNav('nav-cutibersama', 'Cuti Bersama');
+            document.getElementById('view-cutibersama').style.display = 'block';
+            cbInit();
         } else if (viewName === 'cuti') {
             updateNav('nav-cuti', 'Rekap Cuti Tahunan');
             document.getElementById('view-cuti').style.display = 'block';
@@ -2234,6 +2485,190 @@
         return String(s).replace(/[&<>"']/g, c => m[c]);
     }
 
+
+
+    // ─── CUTI BERSAMA ───
+    let _cbEmps = [];   // karyawan terdampak (hasil preview)
+    let _cbDates = [];  // tanggal yang dipilih
+
+    function cbInit() {
+        _cbEmps = [];
+        _cbDates = [];
+        document.getElementById('cb-nama').value = '';
+        document.getElementById('cb-area').value = '';
+        document.getElementById('cb-shift').value = '';
+        document.getElementById('cb-date-list').innerHTML = '';
+        document.getElementById('cb-preview-card').style.display = 'none';
+        // Tambah 1 field tanggal default kosong
+        cbTambahTanggal();
+    }
+
+    function cbTambahTanggal() {
+        _cbDates.push('');
+        cbRenderDateList();
+    }
+
+    function cbHapusTanggal(idx) {
+        _cbDates.splice(idx, 1);
+        cbRenderDateList();
+    }
+
+    function cbDateChanged(idx, val) {
+        _cbDates[idx] = val;
+    }
+
+    function cbRenderDateList() {
+        const container = document.getElementById('cb-date-list');
+        container.innerHTML = '';
+        _cbDates.forEach(function(tgl, idx) {
+            const row = document.createElement('div');
+            row.className = 'cb-date-row';
+
+            const inp = document.createElement('input');
+            inp.type = 'date';
+            inp.className = 'form-ctrl';
+            inp.value = tgl;
+            inp.oninput = function() { cbDateChanged(idx, this.value); };
+
+            const btnDel = document.createElement('button');
+            btnDel.className = 'btn-remove-date';
+            btnDel.innerHTML = '&times;';
+            btnDel.title = 'Hapus tanggal ini';
+            btnDel.onclick = function() { cbHapusTanggal(idx); };
+
+            row.appendChild(inp);
+            row.appendChild(btnDel);
+            container.appendChild(row);
+        });
+    }
+
+    function cbGetFilteredEmps() {
+        const area  = document.getElementById('cb-area').value;
+        const shift = document.getElementById('cb-shift').value;
+        let emps = masterKaryawan.filter(function(k) { return k.status === 'Tetap'; });
+        if (area)  emps = emps.filter(function(k) { return k.wc === area; });
+        if (shift) emps = emps.filter(function(k) { return k.shift === shift; });
+        return emps;
+    }
+
+    function cbPreview() {
+        // Sync date inputs ke _cbDates (jaga-jaga)
+        const inputs = document.querySelectorAll('#cb-date-list input[type=date]');
+        _cbDates = [];
+        inputs.forEach(function(inp) { if (inp.value) _cbDates.push(inp.value); });
+
+        const nama = document.getElementById('cb-nama').value.trim();
+        if (!nama) return showToast('Isi nama event dulu!', '#ff4757');
+        if (_cbDates.length === 0) return showToast('Tambahkan minimal 1 tanggal!', '#ff4757');
+
+        // Hapus duplikat & sort tanggal
+        _cbDates = [...new Set(_cbDates)].sort();
+
+        _cbEmps = cbGetFilteredEmps();
+        if (_cbEmps.length === 0) return showToast('Tidak ada karyawan sesuai filter!', '#ff4757');
+
+        const totalRecord = _cbEmps.length * _cbDates.length;
+
+        document.getElementById('cb-st-karyawan').textContent = _cbEmps.length;
+        document.getElementById('cb-st-hari').textContent = _cbDates.length;
+        document.getElementById('cb-st-record').textContent = totalRecord;
+
+        // Date chips
+        const chipsEl = document.getElementById('cb-date-chips');
+        chipsEl.innerHTML = '';
+        _cbDates.forEach(function(tgl) {
+            const chip = document.createElement('span');
+            chip.className = 'cb-date-chip';
+            // Format tanggal: 28 Mar 2026
+            const d = new Date(tgl + 'T00:00:00');
+            chip.textContent = d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
+            chipsEl.appendChild(chip);
+        });
+
+        // Emp list
+        const empListEl = document.getElementById('cb-emp-list');
+        empListEl.innerHTML = _cbEmps.map(function(k) {
+            return '<span style="display:inline-block;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:2px 8px;margin:2px;font-size:11px;">' + escapeHTMLCuti(k.nama) + '</span>';
+        }).join('');
+
+        // Reset progress
+        document.getElementById('cb-prog-bar').style.display = 'none';
+        document.getElementById('cb-prog-text').style.display = 'none';
+        document.getElementById('cb-prog-fill').style.width = '0%';
+        const btnT = document.getElementById('btn-terapkan');
+        btnT.disabled = false;
+        btnT.textContent = String.fromCodePoint(0x1F334) + ' Terapkan Cuti Bersama Sekarang';
+
+        document.getElementById('cb-preview-card').style.display = 'block';
+        document.getElementById('cb-preview-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function cbTerapkan() {
+        if (_cbEmps.length === 0 || _cbDates.length === 0) return;
+
+        const nama = document.getElementById('cb-nama').value.trim();
+        const total = _cbEmps.length * _cbDates.length;
+                const konfirm = confirm('Terapkan "' + nama + '"?\n\n' + _cbDates.length + ' hari x ' + _cbEmps.length + ' karyawan = ' + total + ' record\n\nStatus cuti akan di-overwrite jika sudah ada. Lanjutkan?');
+        if (!konfirm) return;
+
+        const btn = document.getElementById('btn-terapkan');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        document.getElementById('cb-prog-bar').style.display = 'block';
+        document.getElementById('cb-prog-text').style.display = 'block';
+
+        try {
+            const BATCH_SIZE = 400;
+            let done = 0;
+
+            // Buat semua operasi: setiap emp x setiap tanggal
+            const ops = [];
+            _cbEmps.forEach(function(k) {
+                _cbDates.forEach(function(tgl) {
+                    ops.push({ emp: k, tgl: tgl });
+                });
+            });
+
+            // Proses per batch
+            for (let i = 0; i < ops.length; i += BATCH_SIZE) {
+                const batch = db.batch();
+                const chunk = ops.slice(i, i + BATCH_SIZE);
+                chunk.forEach(function(op) {
+                    const docId = op.emp.id + '_' + op.tgl;
+                    const ref = db.collection('data_absensi').doc(docId);
+                    batch.set(ref, {
+                        id_karyawan: op.emp.id,
+                        nama: op.emp.nama,
+                        work_center: op.emp.wc,
+                        shift: op.emp.shift,
+                        keterangan: 'C',
+                        tanggal_absen: op.tgl,
+                        sumber: 'cuti_bersama',
+                        nama_event: nama,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                await batch.commit();
+                done += chunk.length;
+
+                const pct = Math.round((done / ops.length) * 100);
+                document.getElementById('cb-prog-fill').style.width = pct + '%';
+                document.getElementById('cb-prog-text').textContent = done + ' / ' + ops.length + ' record tersimpan...';
+            }
+
+            invalidateCutiCache();
+            showToast(nama + ' berhasil diterapkan! ' + total + ' record ✅', '#00ff9d');
+            btn.textContent = '✅ Selesai!';
+            document.getElementById('cb-prog-text').textContent = 'Semua ' + total + ' record berhasil disimpan.';
+            document.getElementById('cb-prog-text').style.color = 'var(--c-hadir)';
+
+        } catch(err) {
+            console.error('cbTerapkan error:', err);
+            btn.disabled = false;
+            btn.textContent = String.fromCodePoint(0x1F334) + ' Terapkan Cuti Bersama Sekarang';
+            showToast('Gagal: ' + err.message, '#ff4757');
+        }
+    }
 
     // ─── ROLLOVER TAHUN BARU ───
     let _rolloverData = []; // cache preview data

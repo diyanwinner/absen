@@ -960,6 +960,132 @@
         ::-webkit-scrollbar-thumb { background: var(--bg-card-2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
 
+        /* ─── ROLLOVER MODAL ─── */
+        .rollover-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .rollover-overlay.active { display: flex; }
+
+        .rollover-box {
+            background: var(--bg-2);
+            border: 1px solid rgba(255,165,2,0.3);
+            box-shadow: 0 0 40px rgba(255,165,2,0.1);
+            width: 100%;
+            max-width: 520px;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .rollover-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .rollover-warning {
+            font-size: 12px;
+            color: #ffbe3d;
+            background: rgba(255,165,2,0.08);
+            border: 1px solid rgba(255,165,2,0.2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 14px 0 18px;
+            line-height: 1.6;
+        }
+
+        .rollover-preview {
+            background: var(--bg-3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .rollover-preview table {
+            min-width: unset;
+            font-size: 12px;
+        }
+
+        .rollover-preview th {
+            font-size: 10px;
+            padding: 10px 12px;
+        }
+
+        .rollover-preview td {
+            padding: 8px 12px;
+        }
+
+        .arrow-cell {
+            color: var(--text-faint);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .rollover-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-rollover-confirm {
+            padding: 11px 24px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-rollover-confirm:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-rollover-confirm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-rollover-cancel {
+            padding: 11px 20px;
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-rollover-cancel:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+        .rollover-progress {
+            text-align: center;
+            padding: 20px 0 10px;
+            font-size: 13px;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 2px solid rgba(255,165,2,0.2);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* ─── CUTI FEATURE ─── */
         .cuti-stats-grid {
             display: grid;
@@ -1259,7 +1385,12 @@
 
             <div class="dash-header">
                 <div style="font-size:15px; font-weight:700; color:var(--text-muted);">Rekap Sisa Cuti Tahunan — Karyawan Tetap</div>
-                <div class="year-chip" id="cuti-year-badge">🌴 TAHUN 2026</div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="year-chip" id="cuti-year-badge">🌴 TAHUN 2026</div>
+                    <button onclick="openRolloverModal()" style="padding:6px 14px; background:rgba(255,165,2,0.12); color:#ffbe3d; border:1px solid rgba(255,165,2,0.3); border-radius:20px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='rgba(255,165,2,0.22)'" onmouseout="this.style.background='rgba(255,165,2,0.12)'">
+                        🔄 Rollover Tahun Baru
+                    </button>
+                </div>
             </div>
 
             <div class="filter-panel" style="margin-bottom:20px;">
@@ -1362,7 +1493,7 @@
                     </select>
                     <div style="display:flex;flex-direction:column;gap:4px;min-width:130px;">
                         <label style="font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-faint);">Sisa Cuti Lalu</label>
-                        <input type="number" class="form-ctrl" id="new-sisa-lalu" placeholder="0" min="0" max="24" value="0" style="text-align:center;">
+                        <input type="number" class="form-ctrl" id="new-sisa-lalu" placeholder="—" min="0" max="24" value="" style="text-align:center;">
                     </div>
                     <button id="btn-save-karyawan" class="btn-primary" onclick="simpanKaryawan()">Simpan</button>
                     <button id="btn-cancel-edit" class="btn-secondary" onclick="batalEdit()">Batal</button>
@@ -1413,6 +1544,56 @@
             <button class="btn-status-modal m-cuti"     onclick="saveAbsen('C',  '#2ed573')">🌴 Cuti (C)</button>
         </div>
         <button class="btn-reset-modal" onclick="deleteAbsen()">✅ Ralat — Kembalikan ke Hadir</button>
+    </div>
+</div>
+
+<!-- ROLLOVER MODAL -->
+<div class="rollover-overlay" id="rollover-modal">
+    <div class="rollover-box">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+            <div>
+                <div style="font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#ffbe3d; margin-bottom:6px;">⚠️ Aksi Tidak Bisa Dibatalkan</div>
+                <div class="rollover-title">🔄 Rollover Tahun Baru</div>
+            </div>
+            <button class="btn-close" onclick="closeRolloverModal()">✕</button>
+        </div>
+
+        <div class="rollover-warning">
+            Sistem akan menghitung <b>sisa cuti tahun ini</b> untuk setiap karyawan, lalu menyimpannya sebagai <b>sisa cuti lalu</b> untuk tahun berikutnya.<br>
+            Data lama akan <b>ditimpa permanen</b>. Pastikan semua absensi cuti tahun ini sudah lengkap sebelum rollover.
+        </div>
+
+        <div id="rollover-preview-wrap">
+            <div style="font-size:11px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px;">
+                Preview Perubahan (<span id="rollover-count">—</span> karyawan)
+            </div>
+            <div class="rollover-preview">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">Nama</th>
+                            <th>Sisa Lalu</th>
+                            <th>+Jatah</th>
+                            <th>Terpakai</th>
+                            <th class="arrow-cell">→</th>
+                            <th style="color:var(--accent);">Sisa Baru</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rollover-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="rollover-progress" id="rollover-progress">
+            <div class="spinner"></div> Menyimpan ke Firebase...
+        </div>
+
+        <div class="rollover-actions">
+            <button class="btn-rollover-cancel" onclick="closeRolloverModal()">Batal</button>
+            <button class="btn-rollover-confirm" id="btn-confirm-rollover" onclick="eksekusiRollover()">
+                ✅ Ya, Rollover Sekarang
+            </button>
+        </div>
     </div>
 </div>
 
@@ -2005,30 +2186,30 @@
             const tr = document.createElement('tr');
             tr.dataset.nama = k.nama.toLowerCase();
             tr.innerHTML = `
-                <td style="text-align:center;color:var(--text-faint);font-size:12px;">\${idx + 1}</td>
-                <td style="text-align:left;font-weight:700;font-size:13px;">\${escapeHTMLCuti(k.nama)}</td>
+                <td style="text-align:center;color:var(--text-faint);font-size:12px;">${idx + 1}</td>
+                <td style="text-align:left;font-weight:700;font-size:13px;">${escapeHTMLCuti(k.nama)}</td>
                 <td style="font-size:12px;">
-                    <span style="background:\${k.wc === 'Injection' ? 'rgba(59,126,248,0.15)' : 'rgba(0,212,255,0.1)'};color:\${k.wc === 'Injection' ? '#7eb4ff' : 'var(--accent)'};padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">\${k.wc}</span>
+                    <span style="background:${k.wc === 'Injection' ? 'rgba(59,126,248,0.15)' : 'rgba(0,212,255,0.1)'};color:${k.wc === 'Injection' ? '#7eb4ff' : 'var(--accent)'};padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">${k.wc}</span>
                 </td>
                 <td style="font-size:12px;">
-                    <span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">\${shiftLabel}</span>
+                    <span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">${shiftLabel}</span>
                 </td>
-                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text-muted);">\${JATAH_CUTI}</td>
-                <td style="text-align:center;">\${sisaLaluDisplay}</td>
-                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--text);">\${totalJatah}</td>
-                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:\${terpakai > 0 ? '#ffbe3d' : 'var(--text-faint)'};">\${terpakai}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text-muted);">${JATAH_CUTI}</td>
+                <td style="text-align:center;">${sisaLaluDisplay}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--text);">${totalJatah}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:${terpakai > 0 ? '#ffbe3d' : 'var(--text-faint)'};">${terpakai}</td>
                 <td>
                     <div class="cuti-sisa-cell">
-                        <span class="sisa-badge \${badgeClass}">\${statusIcon} \${sisa} hari</span>
+                        <span class="sisa-badge ${badgeClass}">${statusIcon} ${sisa} hari</span>
                     </div>
                 </td>
                 <td>
                     <div style="padding:4px 0;">
                         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-faint);margin-bottom:4px;">
-                            <span>\${terpakai} / \${totalJatah} hari</span><span>\${sisa} sisa</span>
+                            <span>${terpakai} / ${totalJatah} hari</span><span>${sisa} sisa</span>
                         </div>
                         <div class="cuti-progress-bar">
-                            <div class="cuti-progress-fill" style="width:\${pct}%;background:\${barColor};"></div>
+                            <div class="cuti-progress-fill" style="width:${pct}%;background:${barColor};"></div>
                         </div>
                     </div>
                 </td>
@@ -2051,6 +2232,118 @@
     function escapeHTMLCuti(s) {
         const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"};
         return String(s).replace(/[&<>"']/g, c => m[c]);
+    }
+
+
+    // ─── ROLLOVER TAHUN BARU ───
+    let _rolloverData = []; // cache preview data
+
+    async function openRolloverModal() {
+        const pin = prompt('🔒 PIN Mandor / HRD untuk Rollover:');
+        if (pin !== '111111') return showToast('PIN salah!', '#ff4757');
+
+        // Reset state modal
+        document.getElementById('rollover-progress').style.display = 'none';
+        document.getElementById('rollover-preview-wrap').style.display = 'block';
+        document.getElementById('btn-confirm-rollover').disabled = false;
+        document.getElementById('btn-confirm-rollover').textContent = '✅ Ya, Rollover Sekarang';
+        document.getElementById('rollover-tbody').innerHTML =
+            '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-faint);">Menghitung...</td></tr>';
+        document.getElementById('rollover-modal').classList.add('active');
+
+        await buildRolloverPreview();
+    }
+
+    function closeRolloverModal() {
+        document.getElementById('rollover-modal').classList.remove('active');
+        _rolloverData = [];
+    }
+
+    async function buildRolloverPreview() {
+        const tahun = new Date().getFullYear().toString();
+        const emps  = masterKaryawan.filter(k => k.status === 'Tetap');
+
+        // Ambil data cuti tahun ini
+        const snap = await db.collection('data_absensi').where('keterangan', '==', 'C').get();
+        const cutiMap = {};
+        snap.forEach(doc => {
+            const d = doc.data();
+            if (d.tanggal_absen && d.tanggal_absen.startsWith(tahun)) {
+                cutiMap[d.id_karyawan] = (cutiMap[d.id_karyawan] || 0) + 1;
+            }
+        });
+
+        // Hitung sisa baru per karyawan
+        _rolloverData = emps.map(k => {
+            const sisaLamaInput = Number(k.sisa_cuti_lalu) || 0;
+            const terpakai      = cutiMap[k.id] || 0;
+            const totalJatah    = JATAH_CUTI + sisaLamaInput;
+            const sisaBaru      = Math.max(0, totalJatah - terpakai);
+            return { id: k.id, nama: k.nama, sisaLama: sisaLamaInput, terpakai, totalJatah, sisaBaru };
+        });
+
+        // Sort: yang ada perubahan dulu
+        _rolloverData.sort((a, b) => b.sisaBaru - a.sisaBaru);
+
+        document.getElementById('rollover-count').textContent = _rolloverData.length;
+
+        const tbody = document.getElementById('rollover-tbody');
+        tbody.innerHTML = '';
+        _rolloverData.forEach(r => {
+            const changed = r.sisaBaru !== r.sisaLama;
+            const sisaColor = r.sisaBaru === 0 ? '#ff6b78' : r.sisaBaru <= 3 ? '#ffbe3d' : '#00ff9d';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align:left;font-weight:600;">${escapeHTMLCuti(r.nama)}</td>
+                <td style="text-align:center;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">${r.sisaLama}</td>
+                <td style="text-align:center;color:var(--text-faint);font-family:'JetBrains Mono',monospace;">+${JATAH_CUTI}</td>
+                <td style="text-align:center;color:#ffbe3d;font-family:'JetBrains Mono',monospace;">${r.terpakai > 0 ? '-' + r.terpakai : '0'}</td>
+                <td class="arrow-cell" style="color:${changed ? '#ffbe3d' : 'var(--text-faint)'};">→</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;color:${sisaColor};">${r.sisaBaru}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function eksekusiRollover() {
+        if (!_rolloverData.length) return;
+
+        const btn = document.getElementById('btn-confirm-rollover');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        document.getElementById('rollover-progress').style.display = 'block';
+        document.getElementById('rollover-preview-wrap').style.display = 'none';
+
+        try {
+            // Firebase batch update (max 500 per batch, tapi karyawan pabrik jarang >500)
+            const BATCH_SIZE = 400;
+            for (let i = 0; i < _rolloverData.length; i += BATCH_SIZE) {
+                const batch = db.batch();
+                _rolloverData.slice(i, i + BATCH_SIZE).forEach(r => {
+                    const ref = db.collection('master_karyawan').doc(r.id);
+                    batch.update(ref, { sisa_cuti_lalu: r.sisaBaru });
+                });
+                await batch.commit();
+            }
+
+            // Update local cache masterKaryawan supaya UI langsung sinkron
+            _rolloverData.forEach(r => {
+                const emp = masterKaryawan.find(k => k.id === r.id);
+                if (emp) emp.sisa_cuti_lalu = r.sisaBaru;
+            });
+
+            invalidateCutiCache();
+            closeRolloverModal();
+            showToast(`Rollover selesai! ${_rolloverData.length} karyawan diupdate ✅`, '#00ff9d');
+            loadCutiRekap(); // refresh tampilan
+        } catch (err) {
+            console.error('Rollover error:', err);
+            document.getElementById('rollover-progress').style.display = 'none';
+            document.getElementById('rollover-preview-wrap').style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '✅ Ya, Rollover Sekarang';
+            showToast('Gagal rollover: ' + err.message, '#ff4757');
+        }
     }
 
     // ─── TOAST ───

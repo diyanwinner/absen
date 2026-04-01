@@ -743,6 +743,7 @@
         .m-sb      { background: rgba(116,125,140,0.15); border-color: rgba(116,125,140,0.3); color: #a0aec0; }
         .m-setengah{ background: rgba(236,204,104,0.12); border-color: rgba(236,204,104,0.25);color: #eccc68; }
         .m-cuti    { background: rgba(46,213,115,0.12);  border-color: rgba(46,213,115,0.25); color: #2ed573; grid-column: span 2; }
+        .btn-status-modal:disabled { transform: none !important; filter: grayscale(1); opacity: 0.35; cursor: not-allowed !important; pointer-events: none; }
 
         .btn-reset-modal {
             width: 100%;
@@ -1788,7 +1789,8 @@
             <button class="btn-status-modal m-sb"       onclick="saveAbsen('SB', '#747d8c')">🤒 Sakit Biasa</button>
             <button class="btn-status-modal m-setengah" onclick="saveAbsen('I½', '#eccc68')">½ Izin Setengah</button>
             <button class="btn-status-modal m-setengah" onclick="saveAbsen('S½', '#eccc68')">½ Sakit Setengah</button>
-            <button class="btn-status-modal m-cuti"     onclick="saveAbsen('C',  '#2ed573')">🌴 Cuti (C)</button>
+            <div id="modal-cuti-info" style="display:none; grid-column:span 2; font-size:11px; font-weight:700; padding:8px 12px; border-radius:8px; background:rgba(255,71,87,0.1); color:#ff6b78; border:1px solid rgba(255,71,87,0.3); align-items:center; gap:6px;"></div>
+            <button id="btn-modal-cuti" class="btn-status-modal m-cuti" onclick="saveAbsen('C',  '#2ed573')">🌴 Cuti (C)</button>
         </div>
         <button class="btn-reset-modal" onclick="deleteAbsen()">✅ Ralat — Kembalikan ke Hadir</button>
     </div>
@@ -1867,6 +1869,7 @@
 
     let masterKaryawan = [];
     let currentMonthData = [];
+    let _cutiYearMap = {}; // { id_karyawan: count_cuti_tahun_ini }
     let activeArea = "";
     let selectedEmpId = null;
     let editKaryawanId = null;
@@ -2087,12 +2090,28 @@
             </div>`).join('');
 
         const prefix = tgl.substring(0, 7);
-        db.collection("data_absensi").where("work_center", "==", activeArea).get().then(snap => {
+        const tahun = tgl.substring(0, 4);
+
+        // Fetch absensi bulan ini + cuti tahun ini secara bersamaan
+        Promise.all([
+            db.collection("data_absensi").where("work_center", "==", activeArea).get(),
+            db.collection("data_absensi").where("keterangan", "==", "C").get()
+        ]).then(([snapArea, snapCuti]) => {
             currentMonthData = [];
-            snap.forEach(doc => {
+            snapArea.forEach(doc => {
                 const d = doc.data();
                 if (d.tanggal_absen?.startsWith(prefix)) currentMonthData.push(d);
             });
+
+            // Hitung cuti per karyawan untuk tahun ini
+            _cutiYearMap = {};
+            snapCuti.forEach(doc => {
+                const d = doc.data();
+                if (d.tanggal_absen && d.tanggal_absen.startsWith(tahun)) {
+                    _cutiYearMap[d.id_karyawan] = (_cutiYearMap[d.id_karyawan] || 0) + 1;
+                }
+            });
+
             renderGridAbsen(shift, tgl);
             renderTabelLaporan(shift);
         });
@@ -2194,6 +2213,51 @@
     function openModal(id, nama) {
         selectedEmpId = id;
         document.getElementById('modal-title').innerText = nama;
+
+        // Cek sisa cuti karyawan ini
+        const emp = masterKaryawan.find(k => k.id === id);
+        const btnCuti = document.getElementById('btn-modal-cuti');
+        const cutiInfoEl = document.getElementById('modal-cuti-info');
+
+        if (emp && emp.status === 'Tetap') {
+            const sisaLalu   = Number(emp.sisa_cuti_lalu) || 0;
+            const totalJatah = 12 + sisaLalu;
+            const terpakai   = _cutiYearMap[id] || 0;
+            const sisa       = Math.max(0, totalJatah - terpakai);
+
+            if (sisa <= 0) {
+                // Cuti habis — disable tombol
+                btnCuti.disabled = true;
+                btnCuti.style.opacity = '0.35';
+                btnCuti.style.cursor = 'not-allowed';
+                btnCuti.style.filter = 'grayscale(1)';
+                btnCuti.title = 'Jatah cuti habis';
+                cutiInfoEl.style.display = 'flex';
+                cutiInfoEl.textContent = '⛔ Jatah cuti ' + nama.split(' ')[0] + ' sudah habis (0 dari ' + totalJatah + ' hari tersisa)';
+            } else {
+                // Cuti masih ada — enable tombol
+                btnCuti.disabled = false;
+                btnCuti.style.opacity = '';
+                btnCuti.style.cursor = '';
+                btnCuti.style.filter = '';
+                btnCuti.title = '';
+                cutiInfoEl.style.display = sisa <= 3 ? 'flex' : 'none';
+                if (sisa <= 3) {
+                    cutiInfoEl.style.color = '#ffbe3d';
+                    cutiInfoEl.style.borderColor = 'rgba(255,165,2,0.3)';
+                    cutiInfoEl.style.background = 'rgba(255,165,2,0.08)';
+                    cutiInfoEl.textContent = '⚠️ Sisa cuti ' + nama.split(' ')[0] + ' tinggal ' + sisa + ' hari';
+                }
+            }
+        } else {
+            // Bukan Tetap — sembunyikan info, enable tombol
+            btnCuti.disabled = false;
+            btnCuti.style.opacity = '';
+            btnCuti.style.cursor = '';
+            btnCuti.style.filter = '';
+            cutiInfoEl.style.display = 'none';
+        }
+
         document.getElementById('modal-status').classList.add('active');
     }
 
@@ -2222,6 +2286,11 @@
         if (status === 'C') invalidateCutiCache();
         db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
             closeModal();
+            // Update local cache cutiYearMap supaya modal langsung akurat
+            if (status === 'C') {
+                _cutiYearMap[emp.id] = (_cutiYearMap[emp.id] || 0) + 1;
+                invalidateCutiCache();
+            }
             showToast(`${emp.nama} — ${status} tersimpan`, color);
             refreshArea();
         });
@@ -2230,6 +2299,12 @@
     function deleteAbsen() {
         invalidateCutiCache();
         db.collection("data_absensi").doc(`${selectedEmpId}_${document.getElementById('date-select').value}`).delete().then(() => {
+            // Kalau yang dihapus adalah cuti, kurangi counter
+            const prevAbsen = currentMonthData.find(a => a.id_karyawan === selectedEmpId && a.tanggal_absen === document.getElementById('date-select').value);
+            if (prevAbsen && prevAbsen.keterangan === 'C' && _cutiYearMap[selectedEmpId]) {
+                _cutiYearMap[selectedEmpId] = Math.max(0, (_cutiYearMap[selectedEmpId] || 1) - 1);
+                invalidateCutiCache();
+            }
             closeModal();
             showToast("Status dikembalikan ke Hadir ✅", "#00ff9d");
             refreshArea();

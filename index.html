@@ -1347,6 +1347,111 @@
             height: 10px;
             border-radius: 3px;
         }
+        /* ─── PIN MODAL CUTI BERSAMA ─── */
+        #pin-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(6px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        #pin-modal-overlay.open { display: flex; }
+
+        #pin-modal-box {
+            background: var(--bg-card-2);
+            border: 1px solid var(--border-2);
+            border-radius: 18px;
+            padding: 36px 32px 28px;
+            width: 320px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            text-align: center;
+            animation: pin-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes pin-pop {
+            from { transform: scale(0.85); opacity: 0; }
+            to   { transform: scale(1);    opacity: 1; }
+        }
+
+        #pin-modal-box .pin-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        #pin-modal-box h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        #pin-modal-box p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        #pin-input {
+            width: 100%;
+            background: var(--bg-3);
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            letter-spacing: 6px;
+            outline: none;
+            transition: border-color 0.2s;
+            margin-bottom: 16px;
+        }
+
+        #pin-input:focus { border-color: var(--accent); }
+        #pin-input.pin-error { border-color: #ff4757; animation: pin-shake 0.3s ease; }
+
+        @keyframes pin-shake {
+            0%,100% { transform: translateX(0); }
+            25%      { transform: translateX(-6px); }
+            75%      { transform: translateX(6px); }
+        }
+
+        .pin-btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pin-btn-cancel {
+            flex: 1;
+            padding: 11px;
+            border-radius: 10px;
+            border: 1px solid var(--border-2);
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .pin-btn-cancel:hover { background: var(--bg-3); }
+
+        .pin-btn-ok {
+            flex: 2;
+            padding: 11px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: #000;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .pin-btn-ok:hover { opacity: 0.85; }
     </style>
 </head>
 <body>
@@ -1919,9 +2024,7 @@
             document.getElementById('view-beranda').style.display = 'block';
             loadDataUtama();
         } else if (viewName === 'cutibersama') {
-            updateNav('nav-cutibersama', 'Cuti Bersama');
-            document.getElementById('view-cutibersama').style.display = 'block';
-            cbInit();
+            showCutiPinModal();
         } else if (viewName === 'cuti') {
             updateNav('nav-cuti', 'Rekap Cuti Tahunan');
             document.getElementById('view-cuti').style.display = 'block';
@@ -2857,6 +2960,34 @@
     }
 
     // ─── TOAST ───
+    // ─── PIN CUTI BERSAMA ───
+    function showCutiPinModal() {
+        const inp = document.getElementById('pin-input');
+        inp.value = '';
+        inp.classList.remove('pin-error');
+        document.getElementById('pin-modal-overlay').classList.add('open');
+        setTimeout(() => inp.focus(), 80);
+    }
+
+    function closePinModal() {
+        document.getElementById('pin-modal-overlay').classList.remove('open');
+    }
+
+    function verifyCutiPin() {
+        const inp = document.getElementById('pin-input');
+        if (inp.value === '251213') {
+            closePinModal();
+            updateNav('nav-cutibersama', 'Cuti Bersama');
+            document.getElementById('view-cutibersama').style.display = 'block';
+            cbInit();
+        } else {
+            inp.classList.add('pin-error');
+            inp.value = '';
+            setTimeout(() => inp.classList.remove('pin-error'), 400);
+            showToast('PIN salah!', '#ff4757');
+        }
+    }
+
     function showToast(msg, color) {
         document.getElementById('toast-msg').innerText = msg;
         document.getElementById('toast-dot').style.background = color;
@@ -2866,5 +2997,26 @@
         setTimeout(() => t.classList.remove('show'), 2800);
     }
 </script>
+    <!-- ─── PIN MODAL CUTI BERSAMA ─── -->
+    <div id="pin-modal-overlay">
+        <div id="pin-modal-box">
+            <div class="pin-icon">🔒</div>
+            <h3>Akses Terbatas</h3>
+            <p>Masukkan PIN untuk membuka Cuti Bersama</p>
+            <input
+                type="password"
+                id="pin-input"
+                maxlength="6"
+                inputmode="numeric"
+                placeholder="••••••"
+                onkeydown="if(event.key==='Enter') verifyCutiPin()"
+                autocomplete="off"
+            />
+            <div class="pin-btn-row">
+                <button class="pin-btn-cancel" onclick="closePinModal()">Batal</button>
+                <button class="pin-btn-ok" onclick="verifyCutiPin()">Masuk</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

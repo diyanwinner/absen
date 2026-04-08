@@ -2557,16 +2557,18 @@
         if (jp) data.jam_pulang = jp;
 
         if (status === 'C') invalidateCutiCache();
-        db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
-            closeModal();
-            // Update local cache cutiYearMap supaya modal langsung akurat
-            if (status === 'C') {
-                _cutiYearMap[emp.id] = (_cutiYearMap[emp.id] || 0) + 1;
-                invalidateCutiCache();
-            }
-            showToast(`${emp.nama} — ${status} tersimpan`, color);
-            refreshArea();
-        });
+	db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
+   			   closeModal();
+    			  if (status === 'C') {
+        			  _cutiYearMap[emp.id] = (_cutiYearMap[emp.id] || 0) + 1;
+        			    invalidateCutiCache();
+    			  }
+    			     showToast(`${emp.nama} — ${status} tersimpan`, color);
+    			     refreshArea();
+	}).catch(err => {
+    			    console.error('saveAbsen error:', err);
+    			    showToast('Gagal simpan: ' + err.message, '#ff4757');
+	});
     }
 
     function deleteAbsen() {

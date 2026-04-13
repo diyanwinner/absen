@@ -1347,7 +1347,8 @@
             height: 10px;
             border-radius: 3px;
         }
-        /* ─── PIN MODAL CUTI BERSAMA ─── */
+
+        /* ─── PIN MODAL (GENERIC) ─── */
         #pin-modal-overlay {
             display: none;
             position: fixed;
@@ -1376,23 +1377,9 @@
             to   { transform: scale(1);    opacity: 1; }
         }
 
-        #pin-modal-box .pin-icon {
-            font-size: 36px;
-            margin-bottom: 12px;
-        }
-
-        #pin-modal-box h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        #pin-modal-box p {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-        }
+        #pin-modal-box .pin-icon { font-size: 36px; margin-bottom: 12px; }
+        #pin-modal-box h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        #pin-modal-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
 
         #pin-input {
             width: 100%;
@@ -1410,7 +1397,6 @@
             transition: border-color 0.2s;
             margin-bottom: 16px;
         }
-
         #pin-input:focus { border-color: var(--accent); }
         #pin-input.pin-error { border-color: #ff4757; animation: pin-shake 0.3s ease; }
 
@@ -1420,202 +1406,64 @@
             75%      { transform: translateX(6px); }
         }
 
-        .pin-btn-row {
-            display: flex;
-            gap: 10px;
-        }
-
+        .pin-btn-row { display: flex; gap: 10px; }
         .pin-btn-cancel {
-            flex: 1;
-            padding: 11px;
-            border-radius: 10px;
-            border: 1px solid var(--border-2);
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s;
+            flex: 1; padding: 11px; border-radius: 10px;
+            border: 1px solid var(--border-2); background: transparent;
+            color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer;
         }
         .pin-btn-cancel:hover { background: var(--bg-3); }
-
         .pin-btn-ok {
-            flex: 2;
-            padding: 11px;
-            border-radius: 10px;
-            border: none;
+            flex: 2; padding: 11px; border-radius: 10px; border: none;
             background: linear-gradient(135deg, var(--accent), var(--primary));
-            color: #000;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.15s;
+            color: #000; font-size: 13px; font-weight: 700; cursor: pointer;
         }
         .pin-btn-ok:hover { opacity: 0.85; }
-        /* ─── HAMBURGER & MOBILE ─── */
-        .hamburger {
-            display: none;
-            background: none;
-            border: 1px solid var(--border-2);
-            color: var(--text);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 8px;
-            line-height: 1;
-            margin-right: 10px;
-            transition: background 0.15s;
-        }
-        .hamburger:hover { background: var(--bg-3); }
-
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 99;
-        }
-
-        @media (max-width: 768px) {
-            .hamburger { display: block; }
-
-            .sidebar {
-                position: fixed;
-                left: 0; top: 0; bottom: 0;
-                transform: translateX(-110%);
-                transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
-                z-index: 200;
-            }
-            body.sidebar-open .sidebar { transform: translateX(0); }
-            body.sidebar-open .sidebar-overlay { display: block; }
-
-            .content-body { padding: 14px; }
-            .charts-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .tab-row { flex-wrap: wrap; }
-            .emp-grid { grid-template-columns: 1fr; }
-        }
 
         /* ─── GANTI PIN MODAL ─── */
         #gantipin-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.72);
-            backdrop-filter: blur(6px);
-            z-index: 10001;
-            align-items: center;
-            justify-content: center;
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.72); backdrop-filter: blur(6px);
+            z-index: 10001; align-items: center; justify-content: center;
         }
         #gantipin-overlay.open { display: flex; }
-
         #gantipin-box {
-            background: var(--bg-card-2);
-            border: 1px solid var(--border-2);
-            border-radius: 18px;
-            padding: 32px 28px 24px;
-            width: 340px;
+            background: var(--bg-card-2); border: 1px solid var(--border-2);
+            border-radius: 18px; padding: 32px 28px 24px; width: 340px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             animation: pin-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        #gantipin-box h3 {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 18px;
-            text-align: center;
+        #gantipin-box h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 18px; text-align: center; }
+        .gantipin-row { margin-bottom: 14px; }
+        .gantipin-row label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+        .gantipin-row select, .gantipin-row input {
+            width: 100%; background: var(--bg-3); border: 1px solid var(--border-2);
+            border-radius: 10px; padding: 10px 14px; font-family: 'Outfit', sans-serif;
+            font-size: 14px; font-weight: 600; color: var(--text); outline: none; transition: border-color 0.2s;
         }
-
-        .gantipin-row {
-            margin-bottom: 14px;
-        }
-
-        .gantipin-row label {
-            display: block;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            color: var(--text-faint);
-            margin-bottom: 6px;
-        }
-
-        .gantipin-row select,
-        .gantipin-row input {
-            width: 100%;
-            background: var(--bg-3);
-            border: 1px solid var(--border-2);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .gantipin-row input[type="password"] {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
-            letter-spacing: 4px;
-            text-align: center;
-        }
-
+        .gantipin-row input[type="password"] { font-family: 'JetBrains Mono', monospace; font-size: 18px; letter-spacing: 4px; text-align: center; }
         .gantipin-row select option { background: var(--bg-2); }
-        .gantipin-row input:focus,
-        .gantipin-row select:focus { border-color: var(--accent); }
-
-        .gantipin-btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 18px;
-        }
-
+        .gantipin-row input:focus, .gantipin-row select:focus { border-color: var(--accent); }
+        .gantipin-btn-row { display: flex; gap: 10px; margin-top: 18px; }
         .btn-gantipin-cancel {
-            flex: 1;
-            padding: 11px;
-            border-radius: 10px;
-            border: 1px solid var(--border-2);
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s;
+            flex: 1; padding: 11px; border-radius: 10px; border: 1px solid var(--border-2);
+            background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600; cursor: pointer;
         }
         .btn-gantipin-cancel:hover { background: var(--bg-3); }
-
         .btn-gantipin-ok {
-            flex: 2;
-            padding: 11px;
-            border-radius: 10px;
-            border: none;
+            flex: 2; padding: 11px; border-radius: 10px; border: none;
             background: linear-gradient(135deg, var(--accent-2), var(--accent));
-            color: #000;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: opacity 0.15s;
+            color: #000; font-size: 13px; font-weight: 700; cursor: pointer;
         }
         .btn-gantipin-ok:hover { opacity: 0.85; }
-
         .sidebar-ganti-pin {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 10px;
-            padding: 8px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            transition: all 0.15s;
+            display: flex; align-items: center; gap: 6px; margin-top: 10px;
+            padding: 8px 10px; border-radius: 8px; cursor: pointer;
+            font-size: 12px; font-weight: 600; color: var(--text-muted);
+            border: 1px solid var(--border); transition: all 0.15s;
         }
         .sidebar-ganti-pin:hover { background: var(--bg-3); color: var(--text); border-color: var(--border-2); }
+
     </style>
 </head>
 <body>
@@ -1666,13 +1514,11 @@
         <div class="sidebar-ganti-pin" onclick="showGantiPinModal()">🔑 Ganti PIN</div>
     </div>
 </aside>
-<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <!-- MAIN -->
 <main class="main-content">
     <div class="topbar">
         <div class="topbar-left">
-            <button class="hamburger" onclick="toggleSidebar()">☰</button>
             <div>
                 <div class="breadcrumb">SISTEM ABSENSI PRODUKSI</div>
                 <div class="topbar-title" id="topbar-title">Dashboard</div>
@@ -2126,19 +1972,13 @@
 
 <script>
     // ─── FIREBASE CONFIG ───
-    const _c = ['AIzaS','yANRR','7krSi','HJCvH','kTqNB','_5bmk','MW0SY','tInk'].join('');
-    const _d = ['absen','si-pr','oduks','i.fir','ebase','app.c','om'].join('');
-    const _p = ['absen','si-pr','oduks','i'].join('');
-    const _s = ['absen','si-pr','oduks','i.fir','ebase','stora','ge.ap','p'].join('');
-    const _m = ['17877','28761','19'].join('');
-    const _a = ['1:','17877','28761','19:we','b:f33','a65c3','072b8','eea78','7c12'].join('');
     const firebaseConfig = {
-        apiKey: _c,
-        authDomain: _d,
-        projectId: _p,
-        storageBucket: _s,
-        messagingSenderId: _m,
-        appId: _a
+        apiKey: "AIzaSyANRR7krSiHJCvHkTqNB_5bmkMW0SYtInk",
+        authDomain: "absensi-produksi.firebaseapp.com",
+        projectId: "absensi-produksi",
+        storageBucket: "absensi-produksi.firebasestorage.app",
+        messagingSenderId: "178772876119",
+        appId: "1:178772876119:web:f33a65c3072b8eea787c12"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -2189,7 +2029,6 @@
         ['view-beranda', 'view-area', 'view-cuti', 'view-cutibersama', 'view-karyawan'].forEach(id => {
             document.getElementById(id).style.display = 'none';
         });
-        document.body.classList.remove('sidebar-open');
     }
 
     function openView(viewName) {
@@ -2198,13 +2037,17 @@
             document.getElementById('view-beranda').style.display = 'block';
             loadDataUtama();
         } else if (viewName === 'cutibersama') {
-            showPinModal('cutibersama');
+            updateNav('nav-cutibersama', 'Cuti Bersama');
+            document.getElementById('view-cutibersama').style.display = 'block';
+            cbInit();
         } else if (viewName === 'cuti') {
             updateNav('nav-cuti', 'Rekap Cuti Tahunan');
             document.getElementById('view-cuti').style.display = 'block';
             const tahun = new Date().getFullYear();
             document.getElementById('cuti-year-badge').textContent = '🌴 TAHUN ' + tahun;
             loadCutiRekap();
+        } else if (viewName === 'cutibersama') {
+            showPinModal('cutibersama');
         } else if (viewName === 'karyawan') {
             showPinModal('karyawan');
         }
@@ -2365,22 +2208,17 @@
         const prefix = tgl.substring(0, 7);
         const tahun = tgl.substring(0, 4);
 
-        // Fetch absensi bulan ini + cuti tahun ini secara bersamaan
-        Promise.all([
-            db.collection("data_absensi").where("work_center", "==", activeArea).get(),
-            db.collection("data_absensi").where("keterangan", "==", "C").get()
-        ]).then(([snapArea, snapCuti]) => {
+        // Fetch absensi bulan ini + cuti tahun ini (filter by work_center)
+        db.collection("data_absensi").where("work_center", "==", activeArea).get().then(snapArea => {
             currentMonthData = [];
+            _cutiYearMap = {};
+
             snapArea.forEach(doc => {
                 const d = doc.data();
+                // Data bulan ini
                 if (d.tanggal_absen?.startsWith(prefix)) currentMonthData.push(d);
-            });
-
-            // Hitung cuti per karyawan untuk tahun ini
-            _cutiYearMap = {};
-            snapCuti.forEach(doc => {
-                const d = doc.data();
-                if (d.tanggal_absen && d.tanggal_absen.startsWith(tahun)) {
+                // Hitung cuti tahun ini per karyawan (dari semua data area ini)
+                if (d.keterangan === 'C' && d.tanggal_absen && d.tanggal_absen.startsWith(tahun)) {
                     _cutiYearMap[d.id_karyawan] = (_cutiYearMap[d.id_karyawan] || 0) + 1;
                 }
             });
@@ -2557,18 +2395,16 @@
         if (jp) data.jam_pulang = jp;
 
         if (status === 'C') invalidateCutiCache();
-	db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
-   			   closeModal();
-    			  if (status === 'C') {
-        			  _cutiYearMap[emp.id] = (_cutiYearMap[emp.id] || 0) + 1;
-        			    invalidateCutiCache();
-    			  }
-    			     showToast(`${emp.nama} — ${status} tersimpan`, color);
-    			     refreshArea();
-	}).catch(err => {
-    			    console.error('saveAbsen error:', err);
-    			    showToast('Gagal simpan: ' + err.message, '#ff4757');
-	});
+        db.collection("data_absensi").doc(`${emp.id}_${tgl}`).set(data).then(() => {
+            closeModal();
+            // Update local cache cutiYearMap supaya modal langsung akurat
+            if (status === 'C') {
+                _cutiYearMap[emp.id] = (_cutiYearMap[emp.id] || 0) + 1;
+                invalidateCutiCache();
+            }
+            showToast(`${emp.nama} — ${status} tersimpan`, color);
+            refreshArea();
+        });
     }
 
     function deleteAbsen() {
@@ -3023,9 +2859,11 @@
     // ─── ROLLOVER TAHUN BARU ───
     let _rolloverData = []; // cache preview data
 
-    async function openRolloverModal() {
-        const pin = prompt('🔒 PIN Mandor / HRD untuk Rollover:');
-        if (pin !== '111111') return showToast('PIN salah!', '#ff4757');
+    function openRolloverModal() {
+        showPinModal('rollover');
+    }
+
+    async function _openRolloverAfterPin() {
 
         // Reset state modal
         document.getElementById('rollover-progress').style.display = 'none';
@@ -3131,9 +2969,13 @@
         }
     }
 
-    // ─── TOAST ───
-    // ─── PIN GENERIC ───
-    const _pinDefaults = { cutibersama: '251213', karyawan: '111111' };
+
+    // ─── PIN SYSTEM ───
+    const _pinDefaults = {
+        karyawan:    '111111',
+        cutibersama: '251213',
+        rollover:    '251213'
+    };
 
     function getPin(target) {
         return localStorage.getItem('pin_' + target) || _pinDefaults[target];
@@ -3141,8 +2983,9 @@
 
     function showPinModal(target) {
         const cfg = {
-            cutibersama: { icon: '📅', title: 'Cuti Bersama', subtitle: 'Masukkan PIN untuk membuka Cuti Bersama' },
-            karyawan:    { icon: '👥', title: 'Kelola Karyawan', subtitle: 'Masukkan PIN HRD / Mandor' }
+            karyawan:    { icon: '👥', title: 'Kelola Karyawan',  subtitle: 'Masukkan PIN HRD / Mandor' },
+            cutibersama: { icon: '📅', title: 'Cuti Bersama',     subtitle: 'Masukkan PIN untuk membuka Cuti Bersama' },
+            rollover:    { icon: '🔄', title: 'Rollover Tahun Baru', subtitle: 'Masukkan PIN khusus Rollover' }
         };
         const c = cfg[target];
         document.getElementById('pin-modal-icon').textContent = c.icon;
@@ -3161,18 +3004,21 @@
     }
 
     function verifyPin() {
-        const inp = document.getElementById('pin-input');
+        const inp    = document.getElementById('pin-input');
         const target = document.getElementById('pin-modal-target').value;
         if (inp.value === getPin(target)) {
             closePinModal();
-            if (target === 'cutibersama') {
-                updateNav('nav-cutibersama', 'Cuti Bersama');
-                document.getElementById('view-cutibersama').style.display = 'block';
-                cbInit();
-            } else if (target === 'karyawan') {
+            if (target === 'karyawan') {
                 updateNav('nav-karyawan', 'Kelola Karyawan');
                 document.getElementById('view-karyawan').style.display = 'block';
                 renderTabelMaster();
+            } else if (target === 'cutibersama') {
+                updateNav('nav-cutibersama', 'Cuti Bersama');
+                document.getElementById('view-cutibersama').style.display = 'block';
+                cbInit();
+            } else if (target === 'rollover') {
+                // PIN rollover verified — lanjut buka rollover modal
+                _openRolloverAfterPin();
             }
         } else {
             inp.classList.add('pin-error');
@@ -3207,15 +3053,11 @@
 
         localStorage.setItem('pin_' + target, baru);
         closeGantiPinModal();
-        const label = target === 'cutibersama' ? 'Cuti Bersama' : 'Kelola Karyawan';
-        showToast('PIN ' + label + ' berhasil diganti! 🔑', '#00ff9d');
+        const labels = { karyawan: 'Kelola Karyawan', cutibersama: 'Cuti Bersama', rollover: 'Rollover Tahun Baru' };
+        showToast('PIN ' + labels[target] + ' berhasil diganti! 🔑', '#00ff9d');
     }
 
-    // ─── MOBILE SIDEBAR ───
-    function toggleSidebar() {
-        document.body.classList.toggle('sidebar-open');
-    }
-
+    // ─── TOAST ───
     function showToast(msg, color) {
         document.getElementById('toast-msg').innerText = msg;
         document.getElementById('toast-dot').style.background = color;
@@ -3225,6 +3067,7 @@
         setTimeout(() => t.classList.remove('show'), 2800);
     }
 </script>
+
     <!-- ─── PIN MODAL (GENERIC) ─── -->
     <div id="pin-modal-overlay">
         <div id="pin-modal-box">
@@ -3235,7 +3078,7 @@
             <input
                 type="password"
                 id="pin-input"
-                maxlength="6"
+                maxlength="8"
                 inputmode="numeric"
                 placeholder="••••••"
                 onkeydown="if(event.key==='Enter') verifyPin()"
@@ -3255,21 +3098,22 @@
             <div class="gantipin-row">
                 <label>Pilih PIN yang mau diganti</label>
                 <select id="gantipin-target">
-                    <option value="cutibersama">Cuti Bersama</option>
                     <option value="karyawan">Kelola Karyawan</option>
+                    <option value="cutibersama">Cuti Bersama</option>
+                    <option value="rollover">Rollover Tahun Baru</option>
                 </select>
             </div>
             <div class="gantipin-row">
                 <label>PIN Lama</label>
-                <input type="password" id="gantipin-lama" maxlength="6" inputmode="numeric" placeholder="••••••" autocomplete="off">
+                <input type="password" id="gantipin-lama" maxlength="8" inputmode="numeric" placeholder="••••••" autocomplete="off">
             </div>
             <div class="gantipin-row">
                 <label>PIN Baru</label>
-                <input type="password" id="gantipin-baru" maxlength="6" inputmode="numeric" placeholder="••••••" autocomplete="off">
+                <input type="password" id="gantipin-baru" maxlength="8" inputmode="numeric" placeholder="••••••" autocomplete="off">
             </div>
             <div class="gantipin-row">
                 <label>Konfirmasi PIN Baru</label>
-                <input type="password" id="gantipin-konfirm" maxlength="6" inputmode="numeric" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter') simpanGantiPin()">
+                <input type="password" id="gantipin-konfirm" maxlength="8" inputmode="numeric" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter') simpanGantiPin()">
             </div>
             <div class="gantipin-btn-row">
                 <button class="btn-gantipin-cancel" onclick="closeGantiPinModal()">Batal</button>
@@ -3277,5 +3121,6 @@
             </div>
         </div>
     </div>
+
 </body>
 </html>

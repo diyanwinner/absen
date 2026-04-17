@@ -6,7 +6,7 @@
     <title>AbsensiPro — Sistem Absensi Produksi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
     
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
@@ -14,30 +14,48 @@
 
     <style>
         :root {
-            --bg: #080c14;
-            --bg-2: #0d1526;
-            --bg-3: #111d35;
-            --bg-card: #0f1c30;
-            --bg-card-2: #152238;
+            /* === TITANIUM LUXURY — UNIFIED TRINITY PRODUCTION SYSTEM === */
+            --bg: #121212;              /* body base */
+            --bg-2: #1a1a1a;            /* sidebar */
+            --bg-3: #252525;            /* elevated surface */
+            --bg-card: #1e1e1e;         /* cards */
+            --bg-card-2: #252525;       /* card hover / nested */
+            --bg-input: #2d2d2d;        /* form inputs */
+
             --border: rgba(255,255,255,0.06);
             --border-2: rgba(255,255,255,0.1);
-            --accent: #00d4ff;
-            --accent-dim: rgba(0, 212, 255, 0.12);
-            --accent-2: #00ff9d;
-            --accent-2-dim: rgba(0, 255, 157, 0.1);
-            --primary: #3b7ef8;
-            --primary-dim: rgba(59, 126, 248, 0.15);
-            --text: #e8f0ff;
-            --text-muted: #5e7aa3;
-            --text-faint: #2d4a6e;
+            --border-subtle: #2d2d2d;
+            --border-strong: #404040;
 
-            --c-hadir: #00ff9d;
-            --c-alpha: #ff4757;
-            --c-izin: #ffa502;
-            --c-sd: #3b7ef8;
-            --c-sb: #747d8c;
-            --c-cuti: #2ed573;
-            --c-setengah: #eccc68;
+            /* Gold = primary brand accent (use sparingly in dense UI) */
+            --accent: #d4af37;
+            --accent-hover: #b4942b;
+            --accent-dim: rgba(212, 175, 55, 0.15);
+            --accent-glow: rgba(212, 175, 55, 0.25);
+
+            /* Secondary = success/hadir semantic */
+            --accent-2: #10b981;
+            --accent-2-dim: rgba(16, 185, 129, 0.12);
+
+            /* Info/Blue (kept distinct for S.D = Siang Dinas semantic) */
+            --primary: #3b82f6;
+            --primary-dim: rgba(59, 130, 246, 0.15);
+
+            --text: #e5e5e5;
+            --text-muted: #a3a3a3;
+            --text-faint: #525252;
+
+            /* Status semantics — aligned with first app */
+            --c-hadir:    #10b981;
+            --c-alpha:    #ef4444;
+            --c-izin:     #f59e0b;
+            --c-sd:       #3b82f6;
+            --c-sb:       #6b7280;
+            --c-cuti:     #22c55e;
+            --c-setengah: #eab308;
+
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
 
             --sidebar-w: 220px;
             --topbar-h: 64px;
@@ -46,7 +64,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg);
             color: var(--text);
             display: flex;
@@ -54,14 +72,15 @@
             overflow: hidden;
         }
 
-        /* ─── NOISE TEXTURE OVERLAY ─── */
+        /* ─── SUBTLE DOT TEXTURE (matches entry app) ─── */
         body::before {
             content: '';
             position: fixed; inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            background-image: radial-gradient(rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+            background-size: 30px 30px;
             pointer-events: none;
-            z-index: 9999;
-            opacity: 0.4;
+            z-index: -1;
+            opacity: 1;
         }
 
         /* ─── SIDEBAR ─── */
@@ -76,8 +95,24 @@
         }
 
         .sidebar-logo {
-            padding: 22px 20px;
+            padding: 18px 20px 16px;
             border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-bismillah {
+            font-family: 'Amiri', serif;
+            font-size: 1.15rem;
+            color: var(--accent);
+            text-align: center;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+            opacity: 0.85;
+        }
+
+        .sidebar-logo-row {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -85,11 +120,13 @@
 
         .logo-icon {
             width: 34px; height: 34px;
-            background: linear-gradient(135deg, var(--accent), var(--primary));
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
             border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             font-size: 16px;
             flex-shrink: 0;
+            color: #1a1a1a;
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
         }
 
         .logo-text {
@@ -131,8 +168,8 @@
         .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
 
         .nav-item.active {
-            background: var(--primary-dim);
-            color: #7eb4ff;
+            background: var(--accent-dim);
+            color: var(--accent);
             font-weight: 600;
         }
 
@@ -141,7 +178,7 @@
             position: absolute;
             left: 0; top: 20%; height: 60%;
             width: 3px;
-            background: var(--primary);
+            background: var(--accent);
             border-radius: 0 2px 2px 0;
         }
 
@@ -232,7 +269,7 @@
             font-weight: 600;
             color: var(--accent);
             background: var(--accent-dim);
-            border: 1px solid rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.2);
             padding: 6px 14px;
             border-radius: 20px;
             letter-spacing: 0.5px;
@@ -333,14 +370,14 @@
         .split-divider {
             width: 2px;
             height: 30px;
-            background: #ff4757;
+            background: #ef4444;
             border-radius: 2px;
             opacity: 0.6;
             flex-shrink: 0;
             margin: 0 6px;
         }
 
-        .tag-inj { color: #7eb4ff; }
+        .tag-inj { color: #93c5fd; }
         .tag-assy { color: var(--accent); }
 
         /* ─── SKELETON LOADING ─── */
@@ -399,7 +436,7 @@
             border-radius: 4px;
         }
 
-        .badge-inj { background: rgba(59,126,248,0.15); color: #7eb4ff; }
+        .badge-inj { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
         .badge-assy { background: var(--accent-dim); color: var(--accent); }
 
         .chart-canvas-wrap { flex: 1; position: relative; min-height: 0; }
@@ -428,7 +465,7 @@
         .form-ctrl {
             flex: 1;
             padding: 10px 14px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px;
             font-weight: 600;
             color: var(--text);
@@ -441,7 +478,7 @@
             -webkit-appearance: none;
         }
 
-        .form-ctrl:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,126,248,0.15); }
+        .form-ctrl:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
         .form-ctrl option { background: var(--bg-2); }
 
         /* ─── TABS ─── */
@@ -467,7 +504,7 @@
             border: none;
             background: transparent;
             color: var(--text-muted);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 13px;
             font-weight: 600;
             border-radius: 7px;
@@ -477,7 +514,7 @@
 
         .tab-btn.active {
             background: var(--primary-dim);
-            color: #7eb4ff;
+            color: #93c5fd;
         }
 
         .search-input {
@@ -520,7 +557,7 @@
             justify-content: center;
             font-weight: 800;
             font-size: 14px;
-            color: #7eb4ff;
+            color: #93c5fd;
             flex-shrink: 0;
             letter-spacing: 0.5px;
         }
@@ -553,7 +590,7 @@
         .status-btn {
             padding: 8px 14px;
             border-radius: 8px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 12px;
             font-weight: 700;
             border: none;
@@ -566,12 +603,12 @@
         .status-btn:hover { opacity: 0.85; transform: scale(1.04); }
 
         .s-hadir  { background: rgba(0,255,157,0.12); color: var(--c-hadir); border: 1px solid rgba(0,255,157,0.25); }
-        .s-alpha  { background: rgba(255,71,87,0.18); color: #ff6b78; border: 1px solid rgba(255,71,87,0.3); }
-        .s-izin   { background: rgba(255,165,2,0.18); color: #ffbe3d; border: 1px solid rgba(255,165,2,0.3); }
-        .s-sd     { background: rgba(59,126,248,0.18); color: #7eb4ff; border: 1px solid rgba(59,126,248,0.3); }
-        .s-sb     { background: rgba(116,125,140,0.2); color: #a0aec0; border: 1px solid rgba(116,125,140,0.3); }
-        .s-cuti   { background: rgba(46,213,115,0.15); color: #2ed573; border: 1px solid rgba(46,213,115,0.25); }
-        .s-setengah { background: rgba(236,204,104,0.15); color: #eccc68; border: 1px solid rgba(236,204,104,0.25); }
+        .s-alpha  { background: rgba(239, 68, 68, 0.18); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .s-izin   { background: rgba(245, 158, 11, 0.18); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .s-sd     { background: rgba(59, 130, 246, 0.18); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .s-sb     { background: rgba(116,125,140,0.2); color: #a3a3a3; border: 1px solid rgba(116,125,140,0.3); }
+        .s-cuti   { background: rgba(46,213,115,0.15); color: #22c55e; border: 1px solid rgba(46,213,115,0.25); }
+        .s-setengah { background: rgba(236,204,104,0.15); color: #eab308; border: 1px solid rgba(236,204,104,0.25); }
 
         /* ─── EMPTY STATE ─── */
         .empty-state {
@@ -714,7 +751,7 @@
             flex-shrink: 0;
         }
 
-        .btn-close:hover { background: rgba(255,71,87,0.15); color: #ff6b78; border-color: rgba(255,71,87,0.3); }
+        .btn-close:hover { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); }
 
         .modal-status-grid {
             display: grid;
@@ -727,7 +764,7 @@
             padding: 14px 12px;
             border-radius: 10px;
             border: 1px solid transparent;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
@@ -737,12 +774,12 @@
 
         .btn-status-modal:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        .m-alpha   { background: rgba(255,71,87,0.15);   border-color: rgba(255,71,87,0.3);   color: #ff6b78; }
-        .m-izin    { background: rgba(255,165,2,0.15);   border-color: rgba(255,165,2,0.3);   color: #ffbe3d; }
-        .m-sd      { background: rgba(59,126,248,0.15);  border-color: rgba(59,126,248,0.3);  color: #7eb4ff; }
-        .m-sb      { background: rgba(116,125,140,0.15); border-color: rgba(116,125,140,0.3); color: #a0aec0; }
-        .m-setengah{ background: rgba(236,204,104,0.12); border-color: rgba(236,204,104,0.25);color: #eccc68; }
-        .m-cuti    { background: rgba(46,213,115,0.12);  border-color: rgba(46,213,115,0.25); color: #2ed573; grid-column: span 2; }
+        .m-alpha   { background: rgba(239, 68, 68, 0.15);   border-color: rgba(239, 68, 68, 0.3);   color: #fca5a5; }
+        .m-izin    { background: rgba(245, 158, 11, 0.15);   border-color: rgba(245, 158, 11, 0.3);   color: #fcd34d; }
+        .m-sd      { background: rgba(59, 130, 246, 0.15);  border-color: rgba(59, 130, 246, 0.3);  color: #93c5fd; }
+        .m-sb      { background: rgba(116,125,140,0.15); border-color: rgba(116,125,140,0.3); color: #a3a3a3; }
+        .m-setengah{ background: rgba(236,204,104,0.12); border-color: rgba(236,204,104,0.25);color: #eab308; }
+        .m-cuti    { background: rgba(46,213,115,0.12);  border-color: rgba(46,213,115,0.25); color: #22c55e; grid-column: span 2; }
         .btn-status-modal:disabled { transform: none !important; filter: grayscale(1); opacity: 0.35; cursor: not-allowed !important; pointer-events: none; }
 
         .btn-reset-modal {
@@ -752,7 +789,7 @@
             background: rgba(0,255,157,0.08);
             border: 1px solid rgba(0,255,157,0.2);
             color: var(--c-hadir);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 13px;
             font-weight: 700;
             border-radius: 10px;
@@ -804,7 +841,7 @@
             color: white;
             border: none;
             border-radius: 10px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
@@ -812,7 +849,7 @@
             white-space: nowrap;
         }
 
-        .btn-primary:hover { background: #5090ff; transform: translateY(-1px); }
+        .btn-primary:hover { background: #60a5fa; transform: translateY(-1px); }
 
         .btn-secondary {
             padding: 10px 22px;
@@ -820,7 +857,7 @@
             color: var(--text-muted);
             border: 1px solid var(--border-2);
             border-radius: 10px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
@@ -886,7 +923,7 @@
         .shift-chip.active {
             background: var(--primary-dim);
             border-color: rgba(59,126,248,0.4);
-            color: #7eb4ff;
+            color: #93c5fd;
         }
 
         /* ─── LOADING OVERLAY ─── */
@@ -982,9 +1019,9 @@
 
         .btn-remove-date {
             width: 32px; height: 32px;
-            background: rgba(255,71,87,0.1);
-            border: 1px solid rgba(255,71,87,0.25);
-            color: #ff6b78;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
@@ -992,22 +1029,22 @@
             transition: all 0.15s;
             flex-shrink: 0;
         }
-        .btn-remove-date:hover { background: rgba(255,71,87,0.2); }
+        .btn-remove-date:hover { background: rgba(239, 68, 68, 0.2); }
 
         .btn-add-date {
             padding: 9px 16px;
             background: rgba(59,126,248,0.1);
             border: 1px dashed rgba(59,126,248,0.35);
-            color: #7eb4ff;
+            color: #93c5fd;
             border-radius: 8px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.15s;
             align-self: flex-start;
         }
-        .btn-add-date:hover { background: rgba(59,126,248,0.18); }
+        .btn-add-date:hover { background: rgba(59, 130, 246, 0.18); }
 
         .cb-preview-card {
             background: var(--bg-card);
@@ -1084,11 +1121,11 @@
         .btn-terapkan {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #00c97a, #00a366);
+            background: linear-gradient(135deg, #10b981, #00a366);
             color: #022c22;
             border: none;
             border-radius: 10px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 15px;
             font-weight: 800;
             cursor: pointer;
@@ -1109,7 +1146,7 @@
 
         .cb-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00c97a, #00d4ff);
+            background: linear-gradient(90deg, #10b981, #d4af37);
             border-radius: 10px;
             transition: width 0.3s ease;
         }
@@ -1135,7 +1172,7 @@
 
         .rollover-box {
             background: var(--bg-2);
-            border: 1px solid rgba(255,165,2,0.3);
+            border: 1px solid rgba(245, 158, 11, 0.3);
             box-shadow: 0 0 40px rgba(255,165,2,0.1);
             width: 100%;
             max-width: 520px;
@@ -1152,7 +1189,7 @@
 
         .rollover-warning {
             font-size: 12px;
-            color: #ffbe3d;
+            color: #fcd34d;
             background: rgba(255,165,2,0.08);
             border: 1px solid rgba(255,165,2,0.2);
             border-radius: 8px;
@@ -1203,7 +1240,7 @@
             color: #1a1a1a;
             border: none;
             border-radius: 10px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
@@ -1218,7 +1255,7 @@
             color: var(--text-muted);
             border: 1px solid var(--border-2);
             border-radius: 10px;
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -1295,13 +1332,13 @@
         }
 
         .sisa-aman   { background: rgba(0,255,157,0.12);  color: var(--c-hadir); border: 1px solid rgba(0,255,157,0.25); }
-        .sisa-mepet  { background: rgba(255,165,2,0.15);  color: #ffbe3d;        border: 1px solid rgba(255,165,2,0.3); }
-        .sisa-kritis { background: rgba(255,71,87,0.18);  color: #ff6b78;        border: 1px solid rgba(255,71,87,0.3); }
-        .sisa-habis  { background: rgba(255,71,87,0.25);  color: #ff4757;        border: 1px solid rgba(255,71,87,0.5); animation: pulse-habis 2s ease-in-out infinite; }
+        .sisa-mepet  { background: rgba(245, 158, 11, 0.15);  color: #fcd34d;        border: 1px solid rgba(245, 158, 11, 0.3); }
+        .sisa-kritis { background: rgba(239, 68, 68, 0.18);  color: #fca5a5;        border: 1px solid rgba(239, 68, 68, 0.3); }
+        .sisa-habis  { background: rgba(239, 68, 68, 0.25);  color: #ef4444;        border: 1px solid rgba(239, 68, 68, 0.5); animation: pulse-habis 2s ease-in-out infinite; }
 
         @keyframes pulse-habis {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.3); }
-            50%      { box-shadow: 0 0 0 5px rgba(255,71,87,0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50%      { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
         }
 
         .cuti-empty {
@@ -1398,7 +1435,7 @@
             margin-bottom: 16px;
         }
         #pin-input:focus { border-color: var(--accent); }
-        #pin-input.pin-error { border-color: #ff4757; animation: pin-shake 0.3s ease; }
+        #pin-input.pin-error { border-color: #ef4444; animation: pin-shake 0.3s ease; }
 
         @keyframes pin-shake {
             0%,100% { transform: translateX(0); }
@@ -1438,7 +1475,7 @@
         .gantipin-row label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
         .gantipin-row select, .gantipin-row input {
             width: 100%; background: var(--bg-3); border: 1px solid var(--border-2);
-            border-radius: 10px; padding: 10px 14px; font-family: 'Outfit', sans-serif;
+            border-radius: 10px; padding: 10px 14px; font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: 14px; font-weight: 600; color: var(--text); outline: none; transition: border-color 0.2s;
         }
         .gantipin-row input[type="password"] { font-family: 'JetBrains Mono', monospace; font-size: 18px; letter-spacing: 4px; text-align: center; }
@@ -1464,6 +1501,18 @@
         }
         .sidebar-ganti-pin:hover { background: var(--bg-3); color: var(--text); border-color: var(--border-2); }
 
+        .sidebar-tagline {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-faint);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -1478,8 +1527,11 @@
 <!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="sidebar-logo">
-        <div class="logo-icon">⚡</div>
-        <div class="logo-text">Absensi<span>Pro</span></div>
+        <div class="sidebar-bismillah">بسم الله الرحمن الرحيم</div>
+        <div class="sidebar-logo-row">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">Absensi<span>Pro</span></div>
+        </div>
     </div>
     <div class="sidebar-nav">
         <div class="sidebar-section">Overview</div>
@@ -1512,6 +1564,7 @@
             <span>Firebase Aktif</span>
         </div>
         <div class="sidebar-ganti-pin" onclick="showGantiPinModal()">🔑 Ganti PIN</div>
+        <div class="sidebar-tagline">Trinity Production System</div>
     </div>
 </aside>
 
@@ -1669,7 +1722,7 @@
                 <div style="font-size:15px; font-weight:700; color:var(--text-muted);">Rekap Sisa Cuti Tahunan — Karyawan Tetap</div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <div class="year-chip" id="cuti-year-badge">🌴 TAHUN 2026</div>
-                    <button onclick="openRolloverModal()" style="padding:6px 14px; background:rgba(255,165,2,0.12); color:#ffbe3d; border:1px solid rgba(255,165,2,0.3); border-radius:20px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='rgba(255,165,2,0.22)'" onmouseout="this.style.background='rgba(255,165,2,0.12)'">
+                    <button onclick="openRolloverModal()" style="padding:6px 14px; background:rgba(255,165,2,0.12); color:#fcd34d; border:1px solid rgba(245, 158, 11, 0.3); border-radius:20px; font-family: 'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='rgba(255,165,2,0.22)'" onmouseout="this.style.background='rgba(255,165,2,0.12)'">
                         🔄 Rollover Tahun Baru
                     </button>
                 </div>
@@ -1718,9 +1771,9 @@
             <div class="legend-row">
                 <span style="font-size:11px;font-weight:700;color:var(--text-faint);letter-spacing:0.5px;text-transform:uppercase;">Keterangan:</span>
                 <div class="legend-item"><div class="legend-dot" style="background:var(--c-hadir);"></div> Aman (sisa ≥ 7)</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#ffbe3d;"></div> Mepet (sisa 3–6)</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#ff6b78;"></div> Kritis (sisa 1–2)</div>
-                <div class="legend-item"><div class="legend-dot" style="background:#ff4757;"></div> Habis (sisa 0)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fcd34d;"></div> Mepet (sisa 3–6)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#fca5a5;"></div> Kritis (sisa 1–2)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> Habis (sisa 0)</div>
             </div>
 
             <div class="cuti-table-wrap">
@@ -1793,7 +1846,7 @@
                 <button class="btn-add-date" onclick="cbTambahTanggal()">+ Tambah Tanggal</button>
 
                 <div style="margin-top:20px;">
-                    <button onclick="cbPreview()" style="padding:10px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-family:'Outfit',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#5090ff'" onmouseout="this.style.background='var(--primary)'">
+                    <button onclick="cbPreview()" style="padding:10px 24px; background:var(--primary); color:white; border:none; border-radius:10px; font-family: 'Plus Jakarta Sans',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='#60a5fa'" onmouseout="this.style.background='var(--primary)'">
                         🔍 Preview Karyawan Terdampak
                     </button>
                 </div>
@@ -1901,14 +1954,14 @@
             <button class="btn-close" onclick="closeModal()">✕</button>
         </div>
         <div class="modal-status-grid">
-            <button class="btn-status-modal m-alpha"    onclick="saveAbsen('A',  '#ff4757')">🚫 Alpha (A)</button>
-            <button class="btn-status-modal m-izin"     onclick="saveAbsen('I',  '#ffa502')">🏠 Izin (I)</button>
-            <button class="btn-status-modal m-sd"       onclick="saveAbsen('SD', '#3b7ef8')">🏥 Sakit Dokter</button>
-            <button class="btn-status-modal m-sb"       onclick="saveAbsen('SB', '#747d8c')">🤒 Sakit Biasa</button>
-            <button class="btn-status-modal m-setengah" onclick="saveAbsen('I½', '#eccc68')">½ Izin Setengah</button>
-            <button class="btn-status-modal m-setengah" onclick="saveAbsen('S½', '#eccc68')">½ Sakit Setengah</button>
-            <div id="modal-cuti-info" style="display:none; grid-column:span 2; font-size:11px; font-weight:700; padding:8px 12px; border-radius:8px; background:rgba(255,71,87,0.1); color:#ff6b78; border:1px solid rgba(255,71,87,0.3); align-items:center; gap:6px;"></div>
-            <button id="btn-modal-cuti" class="btn-status-modal m-cuti" onclick="saveAbsen('C',  '#2ed573')">🌴 Cuti (C)</button>
+            <button class="btn-status-modal m-alpha"    onclick="saveAbsen('A',  '#ef4444')">🚫 Alpha (A)</button>
+            <button class="btn-status-modal m-izin"     onclick="saveAbsen('I',  '#f59e0b')">🏠 Izin (I)</button>
+            <button class="btn-status-modal m-sd"       onclick="saveAbsen('SD', '#3b82f6')">🏥 Sakit Dokter</button>
+            <button class="btn-status-modal m-sb"       onclick="saveAbsen('SB', '#6b7280')">🤒 Sakit Biasa</button>
+            <button class="btn-status-modal m-setengah" onclick="saveAbsen('I½', '#eab308')">½ Izin Setengah</button>
+            <button class="btn-status-modal m-setengah" onclick="saveAbsen('S½', '#eab308')">½ Sakit Setengah</button>
+            <div id="modal-cuti-info" style="display:none; grid-column:span 2; font-size:11px; font-weight:700; padding:8px 12px; border-radius:8px; background:rgba(239, 68, 68, 0.12); color:#fca5a5; border:1px solid rgba(239, 68, 68, 0.3); align-items:center; gap:6px;"></div>
+            <button id="btn-modal-cuti" class="btn-status-modal m-cuti" onclick="saveAbsen('C',  '#22c55e')">🌴 Cuti (C)</button>
         </div>
         <button class="btn-reset-modal" onclick="deleteAbsen()">✅ Ralat — Kembalikan ke Hadir</button>
     </div>
@@ -1919,7 +1972,7 @@
     <div class="rollover-box">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
             <div>
-                <div style="font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#ffbe3d; margin-bottom:6px;">⚠️ Aksi Tidak Bisa Dibatalkan</div>
+                <div style="font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#fcd34d; margin-bottom:6px;">⚠️ Aksi Tidak Bisa Dibatalkan</div>
                 <div class="rollover-title">🔄 Rollover Tahun Baru</div>
             </div>
             <button class="btn-close" onclick="closeRolloverModal()">✕</button>
@@ -2141,8 +2194,8 @@
             });
             const topInj  = Object.entries(cInj).sort((a, b) => b[1] - a[1]).slice(0, 5);
             const topAssy = Object.entries(cAssy).sort((a, b) => b[1] - a[1]).slice(0, 5);
-            drawChart('chartInj',  topInj,  '#3b7ef8', chartInj,  c => chartInj = c);
-            drawChart('chartAssy', topAssy, '#00d4ff', chartAssy, c => chartAssy = c);
+            drawChart('chartInj',  topInj,  '#3b82f6', chartInj,  c => chartInj = c);
+            drawChart('chartAssy', topAssy, '#d4af37', chartAssy, c => chartAssy = c);
         });
     }
 
@@ -2169,16 +2222,16 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false }, tooltip: {
-                    backgroundColor: '#0d1526',
+                    backgroundColor: '#1a1a1a',
                     borderColor: color,
                     borderWidth: 1,
-                    titleColor: '#e8f0ff',
+                    titleColor: '#e5e5e5',
                     bodyColor: color,
                     padding: 10,
                 }},
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1, color: '#5e7aa3', font: { family: 'JetBrains Mono', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-                    x: { ticks: { color: '#5e7aa3', font: { size: 11 }, maxRotation: 15 }, grid: { display: false } }
+                    y: { beginAtZero: true, ticks: { stepSize: 1, color: '#a3a3a3', font: { family: 'JetBrains Mono', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    x: { ticks: { color: '#a3a3a3', font: { size: 11 }, maxRotation: 15 }, grid: { display: false } }
                 }
             }
         });
@@ -2289,8 +2342,8 @@
                 cells[tgl].txt = ab.jam_pulang
                     ? `${st}<br><span style="font-size:10px;opacity:0.8;">(${ab.jam_pulang})</span>`
                     : st;
-                const colorMap = { 'A':'#ff4757','I':'#ffa502','SD':'#3b7ef8','SB':'#747d8c','C':'#2ed573' };
-                cells[tgl].bg = colorMap[st] || (st.includes('½') ? '#eccc68' : '');
+                const colorMap = { 'A':'#ef4444','I':'#f59e0b','SD':'#3b82f6','SB':'#6b7280','C':'#22c55e' };
+                cells[tgl].bg = colorMap[st] || (st.includes('½') ? '#eab308' : '');
             });
 
             for (let i = 1; i <= 31; i++) {
@@ -2305,13 +2358,13 @@
             if (cA || cI || cSD || cSB || cCuti || cI2 || cS2) {
                 tbRekap.innerHTML += `<tr>
                     <td class="name-col">${k.nama}</td>
-                    <td style="color:#ff6b78;font-weight:700;">${cA || '-'}</td>
-                    <td style="color:#ffbe3d;font-weight:700;">${cI || '-'}</td>
-                    <td style="color:#7eb4ff;font-weight:700;">${cSD || '-'}</td>
-                    <td style="color:#a0aec0;font-weight:700;">${cSB || '-'}</td>
-                    <td style="color:#2ed573;font-weight:700;">${cCuti || '-'}</td>
-                    <td style="color:#eccc68;font-weight:700;">${cI2 ? cI2 + 'x' : '-'}</td>
-                    <td style="color:#eccc68;font-weight:700;">${cS2 ? cS2 + 'x' : '-'}</td>
+                    <td style="color:#fca5a5;font-weight:700;">${cA || '-'}</td>
+                    <td style="color:#fcd34d;font-weight:700;">${cI || '-'}</td>
+                    <td style="color:#93c5fd;font-weight:700;">${cSD || '-'}</td>
+                    <td style="color:#a3a3a3;font-weight:700;">${cSB || '-'}</td>
+                    <td style="color:#22c55e;font-weight:700;">${cCuti || '-'}</td>
+                    <td style="color:#eab308;font-weight:700;">${cI2 ? cI2 + 'x' : '-'}</td>
+                    <td style="color:#eab308;font-weight:700;">${cS2 ? cS2 + 'x' : '-'}</td>
                 </tr>`;
             }
         });
@@ -2354,8 +2407,8 @@
                 btnCuti.title = '';
                 cutiInfoEl.style.display = sisa <= 3 ? 'flex' : 'none';
                 if (sisa <= 3) {
-                    cutiInfoEl.style.color = '#ffbe3d';
-                    cutiInfoEl.style.borderColor = 'rgba(255,165,2,0.3)';
+                    cutiInfoEl.style.color = '#fcd34d';
+                    cutiInfoEl.style.borderColor = 'rgba(245, 158, 11, 0.3)';
                     cutiInfoEl.style.background = 'rgba(255,165,2,0.08)';
                     cutiInfoEl.textContent = '⚠️ Sisa cuti ' + nama.split(' ')[0] + ' tinggal ' + sisa + ' hari';
                 }
@@ -2384,7 +2437,7 @@
 
         if (status.includes('½')) {
             jp = prompt(`Jam berapa ${emp.nama} pulang? (cth: 14.30)`);
-            if (!jp) return showToast("Dibatalkan", "#747d8c");
+            if (!jp) return showToast("Dibatalkan", "#6b7280");
         }
 
         let data = {
@@ -2417,7 +2470,7 @@
                 invalidateCutiCache();
             }
             closeModal();
-            showToast("Status dikembalikan ke Hadir ✅", "#00ff9d");
+            showToast("Status dikembalikan ke Hadir ✅", "#10b981");
             refreshArea();
         });
     }
@@ -2431,17 +2484,17 @@
             if (!k.nama.toLowerCase().includes(kw)) return;
             const sisaLalu = k.sisa_cuti_lalu || 0;
             const sisaLaluStyle = sisaLalu > 0
-                ? 'background:rgba(46,213,115,0.12);color:#2ed573;border:1px solid rgba(46,213,115,0.25);'
+                ? 'background:rgba(46,213,115,0.12);color:#22c55e;border:1px solid rgba(46,213,115,0.25);'
                 : 'background:rgba(255,255,255,0.04);color:var(--text-faint);';
             tb.innerHTML += `<tr>
                 <td style="text-align:left;font-weight:600;">${k.nama}</td>
                 <td>${k.wc}</td>
-                <td><span style="background:var(--primary-dim);color:#7eb4ff;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">Shift ${k.shift}</span></td>
+                <td><span style="background:var(--primary-dim);color:#93c5fd;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">Shift ${k.shift}</span></td>
                 <td><span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">${k.status}</span></td>
                 <td style="text-align:center;"><span style="${sisaLaluStyle}padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;">${sisaLalu} hari</span></td>
                 <td>
-                    <button onclick="editKaryawan('${k.id}')" style="background:rgba(255,165,2,0.15);color:#ffa502;border:1px solid rgba(255,165,2,0.3);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;margin-right:5px;font-family:Outfit,sans-serif;">Edit</button>
-                    <button onclick="hapusKaryawan('${k.id}','${k.nama}')" style="background:rgba(255,71,87,0.12);color:#ff6b78;border:1px solid rgba(255,71,87,0.25);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:Outfit,sans-serif;">Hapus</button>
+                    <button onclick="editKaryawan('${k.id}')" style="background:rgba(245, 158, 11, 0.15);color:#f59e0b;border:1px solid rgba(245, 158, 11, 0.3);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;margin-right:5px;font-family:'Plus Jakarta Sans',sans-serif;">Edit</button>
+                    <button onclick="hapusKaryawan('${k.id}','${k.nama}')" style="background:rgba(239, 68, 68, 0.12);color:#fca5a5;border:1px solid rgba(239, 68, 68, 0.25);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">Hapus</button>
                 </td>
             </tr>`;
         });
@@ -2457,17 +2510,17 @@
             status: document.getElementById('new-status').value,
             sisa_cuti_lalu: Number(document.getElementById('new-sisa-lalu').value) || 0
         };
-        if (!data.nama || !data.wc || !data.shift || !data.status) return showToast("Lengkapi semua data!", "#ff4757");
+        if (!data.nama || !data.wc || !data.shift || !data.status) return showToast("Lengkapi semua data!", "#ef4444");
 
         if (editKaryawanId) {
             db.collection("master_karyawan").doc(editKaryawanId).update(data).then(() => {
-                showToast("Data diupdate! ✅", "#00ff9d");
+                showToast("Data diupdate! ✅", "#10b981");
                 batalEdit();
                 loadDataUtama(); setTimeout(renderTabelMaster, 800);
             });
         } else {
             db.collection("master_karyawan").add(data).then(() => {
-                showToast("Karyawan baru disimpan! ✅", "#00ff9d");
+                showToast("Karyawan baru disimpan! ✅", "#10b981");
                 document.getElementById('new-nama').value = '';
                 loadDataUtama(); setTimeout(renderTabelMaster, 800);
             });
@@ -2502,7 +2555,7 @@
     function hapusKaryawan(id, nama) {
         if (confirm(`Yakin hapus ${nama}?`)) {
             db.collection("master_karyawan").doc(id).delete().then(() => {
-                showToast(`${nama} dihapus`, "#747d8c");
+                showToast(`${nama} dihapus`, "#6b7280");
                 loadDataUtama(); setTimeout(renderTabelMaster, 800);
             });
         }
@@ -2588,7 +2641,7 @@
         } catch(err) {
             console.error('loadCutiRekap error:', err);
             document.getElementById('cuti-tbody').innerHTML =
-                '<tr><td colspan="8" style="text-align:center;padding:32px;color:#ff6b78;">⚠️ Gagal memuat data. Cek koneksi internet.</td></tr>';
+                '<tr><td colspan="8" style="text-align:center;padding:32px;color:#fca5a5;">⚠️ Gagal memuat data. Cek koneksi internet.</td></tr>';
         }
     }
 
@@ -2611,10 +2664,10 @@
 
             // Warna progress bar & badge
             let barColor, badgeClass, statusIcon;
-            if (sisa === 0)      { barColor = '#ff4757'; badgeClass = 'sisa-habis';  statusIcon = '🔴'; }
-            else if (sisa <= 2)  { barColor = '#ff6b78'; badgeClass = 'sisa-kritis'; statusIcon = '🟠'; }
-            else if (sisa <= 6)  { barColor = '#ffbe3d'; badgeClass = 'sisa-mepet';  statusIcon = '🟡'; }
-            else                 { barColor = '#00ff9d'; badgeClass = 'sisa-aman';   statusIcon = '🟢'; }
+            if (sisa === 0)      { barColor = '#ef4444'; badgeClass = 'sisa-habis';  statusIcon = '🔴'; }
+            else if (sisa <= 2)  { barColor = '#fca5a5'; badgeClass = 'sisa-kritis'; statusIcon = '🟠'; }
+            else if (sisa <= 6)  { barColor = '#fcd34d'; badgeClass = 'sisa-mepet';  statusIcon = '🟡'; }
+            else                 { barColor = '#10b981'; badgeClass = 'sisa-aman';   statusIcon = '🟢'; }
 
             const sisaLaluDisplay = sisaLalu > 0
                 ? `<span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);background:rgba(0,212,255,0.08);padding:3px 8px;border-radius:5px;">+${sisaLalu}</span>`
@@ -2626,7 +2679,7 @@
                 <td style="text-align:center;color:var(--text-faint);font-size:12px;">${idx + 1}</td>
                 <td style="text-align:left;font-weight:700;font-size:13px;">${escapeHTMLCuti(k.nama)}</td>
                 <td style="font-size:12px;">
-                    <span style="background:${k.wc === 'Injection' ? 'rgba(59,126,248,0.15)' : 'rgba(0,212,255,0.1)'};color:${k.wc === 'Injection' ? '#7eb4ff' : 'var(--accent)'};padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">${k.wc}</span>
+                    <span style="background:${k.wc === 'Injection' ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0,212,255,0.1)'};color:${k.wc === 'Injection' ? '#93c5fd' : 'var(--accent)'};padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">${k.wc}</span>
                 </td>
                 <td style="font-size:12px;">
                     <span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 8px;border-radius:5px;font-size:11px;font-weight:700;">${shiftLabel}</span>
@@ -2634,7 +2687,7 @@
                 <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text-muted);">${JATAH_CUTI}</td>
                 <td style="text-align:center;">${sisaLaluDisplay}</td>
                 <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--text);">${totalJatah}</td>
-                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:${terpakai > 0 ? '#ffbe3d' : 'var(--text-faint)'};">${terpakai}</td>
+                <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;color:${terpakai > 0 ? '#fcd34d' : 'var(--text-faint)'};">${terpakai}</td>
                 <td>
                     <div class="cuti-sisa-cell">
                         <span class="sisa-badge ${badgeClass}">${statusIcon} ${sisa} hari</span>
@@ -2744,14 +2797,14 @@
         inputs.forEach(function(inp) { if (inp.value) _cbDates.push(inp.value); });
 
         const nama = document.getElementById('cb-nama').value.trim();
-        if (!nama) return showToast('Isi nama event dulu!', '#ff4757');
-        if (_cbDates.length === 0) return showToast('Tambahkan minimal 1 tanggal!', '#ff4757');
+        if (!nama) return showToast('Isi nama event dulu!', '#ef4444');
+        if (_cbDates.length === 0) return showToast('Tambahkan minimal 1 tanggal!', '#ef4444');
 
         // Hapus duplikat & sort tanggal
         _cbDates = [...new Set(_cbDates)].sort();
 
         _cbEmps = cbGetFilteredEmps();
-        if (_cbEmps.length === 0) return showToast('Tidak ada karyawan sesuai filter!', '#ff4757');
+        if (_cbEmps.length === 0) return showToast('Tidak ada karyawan sesuai filter!', '#ef4444');
 
         const totalRecord = _cbEmps.length * _cbDates.length;
 
@@ -2843,7 +2896,7 @@
             }
 
             invalidateCutiCache();
-            showToast(nama + ' berhasil diterapkan! ' + total + ' record ✅', '#00ff9d');
+            showToast(nama + ' berhasil diterapkan! ' + total + ' record ✅', '#10b981');
             btn.textContent = '✅ Selesai!';
             document.getElementById('cb-prog-text').textContent = 'Semua ' + total + ' record berhasil disimpan.';
             document.getElementById('cb-prog-text').style.color = 'var(--c-hadir)';
@@ -2852,7 +2905,7 @@
             console.error('cbTerapkan error:', err);
             btn.disabled = false;
             btn.textContent = String.fromCodePoint(0x1F334) + ' Terapkan Cuti Bersama Sekarang';
-            showToast('Gagal: ' + err.message, '#ff4757');
+            showToast('Gagal: ' + err.message, '#ef4444');
         }
     }
 
@@ -2914,14 +2967,14 @@
         tbody.innerHTML = '';
         _rolloverData.forEach(r => {
             const changed = r.sisaBaru !== r.sisaLama;
-            const sisaColor = r.sisaBaru === 0 ? '#ff6b78' : r.sisaBaru <= 3 ? '#ffbe3d' : '#00ff9d';
+            const sisaColor = r.sisaBaru === 0 ? '#fca5a5' : r.sisaBaru <= 3 ? '#fcd34d' : '#10b981';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="text-align:left;font-weight:600;">${escapeHTMLCuti(r.nama)}</td>
                 <td style="text-align:center;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">${r.sisaLama}</td>
                 <td style="text-align:center;color:var(--text-faint);font-family:'JetBrains Mono',monospace;">+${JATAH_CUTI}</td>
-                <td style="text-align:center;color:#ffbe3d;font-family:'JetBrains Mono',monospace;">${r.terpakai > 0 ? '-' + r.terpakai : '0'}</td>
-                <td class="arrow-cell" style="color:${changed ? '#ffbe3d' : 'var(--text-faint)'};">→</td>
+                <td style="text-align:center;color:#fcd34d;font-family:'JetBrains Mono',monospace;">${r.terpakai > 0 ? '-' + r.terpakai : '0'}</td>
+                <td class="arrow-cell" style="color:${changed ? '#fcd34d' : 'var(--text-faint)'};">→</td>
                 <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;color:${sisaColor};">${r.sisaBaru}</td>
             `;
             tbody.appendChild(tr);
@@ -2957,7 +3010,7 @@
 
             invalidateCutiCache();
             closeRolloverModal();
-            showToast(`Rollover selesai! ${_rolloverData.length} karyawan diupdate ✅`, '#00ff9d');
+            showToast(`Rollover selesai! ${_rolloverData.length} karyawan diupdate ✅`, '#10b981');
             loadCutiRekap(); // refresh tampilan
         } catch (err) {
             console.error('Rollover error:', err);
@@ -2965,7 +3018,7 @@
             document.getElementById('rollover-preview-wrap').style.display = 'block';
             btn.disabled = false;
             btn.textContent = '✅ Ya, Rollover Sekarang';
-            showToast('Gagal rollover: ' + err.message, '#ff4757');
+            showToast('Gagal rollover: ' + err.message, '#ef4444');
         }
     }
 
@@ -3024,7 +3077,7 @@
             inp.classList.add('pin-error');
             inp.value = '';
             setTimeout(() => inp.classList.remove('pin-error'), 400);
-            showToast('PIN salah!', '#ff4757');
+            showToast('PIN salah!', '#ef4444');
         }
     }
 
@@ -3047,14 +3100,14 @@
         const baru    = document.getElementById('gantipin-baru').value;
         const konfirm = document.getElementById('gantipin-konfirm').value;
 
-        if (lama !== getPin(target)) return showToast('PIN lama salah!', '#ff4757');
-        if (baru.length < 4)        return showToast('PIN baru minimal 4 digit!', '#ffa502');
-        if (baru !== konfirm)       return showToast('Konfirmasi PIN tidak cocok!', '#ffa502');
+        if (lama !== getPin(target)) return showToast('PIN lama salah!', '#ef4444');
+        if (baru.length < 4)        return showToast('PIN baru minimal 4 digit!', '#f59e0b');
+        if (baru !== konfirm)       return showToast('Konfirmasi PIN tidak cocok!', '#f59e0b');
 
         localStorage.setItem('pin_' + target, baru);
         closeGantiPinModal();
         const labels = { karyawan: 'Kelola Karyawan', cutibersama: 'Cuti Bersama', rollover: 'Rollover Tahun Baru' };
-        showToast('PIN ' + labels[target] + ' berhasil diganti! 🔑', '#00ff9d');
+        showToast('PIN ' + labels[target] + ' berhasil diganti! 🔑', '#10b981');
     }
 
     // ─── TOAST ───

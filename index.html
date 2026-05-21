@@ -2681,6 +2681,53 @@
             font-weight: 900 !important;
         }
 
+
+        /* ─── LAPORAN TOOLS / EXPORT ─── */
+        .report-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 10px 0 14px;
+            padding: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .report-toolbar-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .report-toolbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-mini-action {
+            border: 1px solid var(--border-2);
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            border-radius: 8px;
+            padding: 8px 11px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-mini-action:hover {
+            border-color: rgba(212,175,55,0.45);
+            background: var(--accent-dim);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
     </style>
 </head>
 <body>
@@ -2857,7 +2904,16 @@
             </div>
 
             <div id="area-laporan" style="display:none;">
-                <div class="section-title">Rekapitulasi Mangkir Bulan Ini</div>
+                <div class="report-toolbar">
+                    <div class="report-toolbar-title" id="report-month-label">📅 Laporan bulan terpilih</div>
+                    <div class="report-toolbar-actions">
+                        <button class="btn-mini-action" onclick="exportAreaCsv('rekap')">⬇ Export Rekap CSV</button>
+                        <button class="btn-mini-action" onclick="exportAreaCsv('harian')">⬇ Export Harian CSV</button>
+                        <button class="btn-mini-action" onclick="window.print()">🖨 Cetak</button>
+                    </div>
+                </div>
+
+                <div class="section-title" id="rekap-title">Rekapitulasi Mangkir Bulan Ini</div>
                 <div class="table-wrap">
                     <table>
                         <thead>
@@ -2871,7 +2927,7 @@
                     </table>
                 </div>
 
-                <div class="section-title">Detail Kehadiran Harian</div>
+                <div class="section-title" id="harian-title">Detail Kehadiran Harian</div>
                 <div class="table-wrap">
                     <table>
                         <thead><tr id="header-harian"><th class="name-col">Nama Karyawan</th></tr></thead>
@@ -3223,6 +3279,45 @@
     let editKaryawanId = null;
     let chartInj = null, chartAssy = null;
 
+    // ─── UTILITIES ───
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    function toLocalDateInputValue(date) {
+        return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate());
+    }
+
+    function getMonthPrefixFromDateValue(value) {
+        return (value || toLocalDateInputValue(new Date())).substring(0, 7);
+    }
+
+    function getDaysInMonthFromPrefix(prefix) {
+        const parts = (prefix || getMonthPrefixFromDateValue()).split('-').map(Number);
+        return new Date(parts[0], parts[1], 0).getDate();
+    }
+
+    function monthLabelFromPrefix(prefix) {
+        const parts = (prefix || getMonthPrefixFromDateValue()).split('-').map(Number);
+        return new Date(parts[0], parts[1] - 1, 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
+    }
+
+    function escapeHTML(s) {
+        const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"};
+        return String(s ?? '').replace(/[&<>"']/g, ch => m[ch]);
+    }
+
+    function renderHeaderHarianForDate(dateValue) {
+        const header = document.getElementById('header-harian');
+        if (!header) return;
+        const prefix = getMonthPrefixFromDateValue(dateValue);
+        const dayCount = getDaysInMonthFromPrefix(prefix);
+        header.innerHTML = '<th class="name-col">Nama Karyawan</th>';
+        for (let i = 1; i <= dayCount; i++) {
+            const th = document.createElement('th');
+            th.innerText = i;
+            header.appendChild(th);
+        }
+    }
+
     // ─── HIDE LOADER ───
     window.addEventListener('load', () => {
         setTimeout(() => document.getElementById('page-loader').classList.add('hidden'), 1200);
@@ -3242,14 +3337,11 @@
     document.getElementById('badge-periode').innerText =
         now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).toUpperCase();
 
-    // ─── HEADER HARIAN (1-31) ───
-    document.getElementById('date-select').valueAsDate = new Date();
-    const headerHarian = document.getElementById('header-harian');
-    for (let i = 1; i <= 31; i++) {
-        let th = document.createElement('th');
-        th.innerText = i;
-        headerHarian.appendChild(th);
-    }
+    // ─── HEADER HARIAN DINAMIS SESUAI BULAN ───
+    const dateSelectEl = document.getElementById('date-select');
+    dateSelectEl.value = toLocalDateInputValue(new Date());
+    renderHeaderHarianForDate(dateSelectEl.value);
+    dateSelectEl.addEventListener('change', () => renderHeaderHarianForDate(dateSelectEl.value));
 
     // ─── NAVIGASI ───
     function updateNav(activeId, title) {
@@ -3352,7 +3444,7 @@
 
     // ─── GRAFIK ───
     function loadGrafikBeranda() {
-        const prefix = new Date().toISOString().substring(0, 7);
+        const prefix = getMonthPrefixFromDateValue(document.getElementById('date-select')?.value);
         const filterShift = document.getElementById('filter-shift-grafik')?.value || "Semua";
 
         db.collection("data_absensi").get().then(snap => {
@@ -3433,6 +3525,11 @@
 
         const prefix = tgl.substring(0, 7);
         const tahun = tgl.substring(0, 4);
+        renderHeaderHarianForDate(tgl);
+        const labelBulan = monthLabelFromPrefix(prefix);
+        document.getElementById('report-month-label').textContent = `📅 ${activeArea} · Shift ${shift} · ${labelBulan}`;
+        document.getElementById('rekap-title').textContent = `Rekapitulasi Mangkir ${labelBulan}`;
+        document.getElementById('harian-title').textContent = `Detail Kehadiran Harian ${labelBulan}`;
 
         // Fetch absensi bulan ini + cuti tahun ini (filter by work_center)
         db.collection("data_absensi").where("work_center", "==", activeArea).get().then(snapArea => {
@@ -3478,19 +3575,21 @@
             }
 
             const shiftLabel = k.shift === 'Rolling' ? 'Fleksibel' : `Shift ${k.shift}`;
+            const safeNama = escapeHTML(k.nama);
+            const avatar = escapeHTML(k.nama.substring(0, 2).toUpperCase());
             container.innerHTML += `
                 <div class="emp-card">
                     <div class="emp-info">
-                        <div class="avatar">${k.nama.substring(0, 2).toUpperCase()}</div>
+                        <div class="avatar">${avatar}</div>
                         <div class="emp-details">
-                            <div class="emp-name">${k.nama}</div>
+                            <div class="emp-name">${safeNama}</div>
                             <div class="emp-meta">
-                                <span class="pill">${shiftLabel}</span>
-                                <span class="pill">${k.status}</span>
+                                <span class="pill">${escapeHTML(shiftLabel)}</span>
+                                <span class="pill">${escapeHTML(k.status)}</span>
                             </div>
                         </div>
                     </div>
-                    <button class="status-btn ${btnCls}" onclick="openModal('${k.id}', '${k.nama}')">${btnTxt}</button>
+                    <button class="status-btn ${btnCls}" onclick='openModal(${JSON.stringify(k.id)})'>${btnTxt}</button>
                 </div>`;
         });
     }
@@ -3502,8 +3601,10 @@
 
         const emps = masterKaryawan.filter(k => k.wc === activeArea && (k.shift === shift || k.shift === "Rolling"));
         emps.forEach(k => {
-            let trHarian = `<tr><td class="name-col">${k.nama}</td>`;
-            let cells = {}; for (let i = 1; i <= 31; i++) cells[i] = { txt: '', bg: '' };
+            const safeNama = escapeHTML(k.nama);
+            let trHarian = `<tr><td class="name-col">${safeNama}</td>`;
+            const dayCount = getDaysInMonthFromPrefix(getMonthPrefixFromDateValue(document.getElementById('date-select').value));
+            let cells = {}; for (let i = 1; i <= dayCount; i++) cells[i] = { txt: '', bg: '' };
             let cA = 0, cI = 0, cSD = 0, cSB = 0, cCuti = 0, cI2 = 0, cS2 = 0;
 
             currentMonthData.filter(a => a.id_karyawan === k.id).forEach(ab => {
@@ -3512,14 +3613,15 @@
                 else if (st === 'SB') cSB++; else if (st === 'C') cCuti++;
                 else if (st === 'I½') cI2++; else if (st === 'S½') cS2++;
                 const tgl = parseInt(ab.tanggal_absen.split('-')[2]);
+                if (!cells[tgl]) return;
                 cells[tgl].txt = ab.jam_pulang
-                    ? `${st}<br><span style="font-size:10px;opacity:0.8;">(${ab.jam_pulang})</span>`
-                    : st;
+                    ? `${escapeHTML(st)}<br><span style="font-size:10px;opacity:0.8;">(${escapeHTML(ab.jam_pulang)})</span>`
+                    : escapeHTML(st);
                 const colorMap = { 'A':'#ef4444','I':'#f59e0b','SD':'#3b82f6','SB':'#6b7280','C':'#22c55e' };
                 cells[tgl].bg = colorMap[st] || (st.includes('½') ? '#eab308' : '');
             });
 
-            for (let i = 1; i <= 31; i++) {
+            for (let i = 1; i <= dayCount; i++) {
                 let style = cells[i].bg
                     ? `background:${cells[i].bg}22; color:${cells[i].bg}; font-weight:700; border-color:${cells[i].bg}44;`
                     : '';
@@ -3530,7 +3632,7 @@
 
             if (cA || cI || cSD || cSB || cCuti || cI2 || cS2) {
                 tbRekap.innerHTML += `<tr>
-                    <td class="name-col">${k.nama}</td>
+                    <td class="name-col">${safeNama}</td>
                     <td style="color:#fca5a5;font-weight:700;">${cA || '-'}</td>
                     <td style="color:#fcd34d;font-weight:700;">${cI || '-'}</td>
                     <td style="color:#93c5fd;font-weight:700;">${cSD || '-'}</td>
@@ -3547,12 +3649,13 @@
     }
 
     // ─── MODAL ───
-    function openModal(id, nama) {
+    function openModal(id) {
         selectedEmpId = id;
+        const emp = masterKaryawan.find(k => k.id === id);
+        const nama = emp?.nama || 'Karyawan';
         document.getElementById('modal-title').innerText = nama;
 
         // Cek sisa cuti karyawan ini
-        const emp = masterKaryawan.find(k => k.id === id);
         const btnCuti = document.getElementById('btn-modal-cuti');
         const cutiInfoEl = document.getElementById('modal-cuti-info');
 
@@ -3659,15 +3762,16 @@
             const sisaLaluStyle = sisaLalu > 0
                 ? 'background:rgba(46,213,115,0.12);color:#22c55e;border:1px solid rgba(46,213,115,0.25);'
                 : 'background:rgba(255,255,255,0.04);color:var(--text-faint);';
+            const shiftText = k.shift === 'Rolling' ? 'Rolling' : 'Shift ' + k.shift;
             tb.innerHTML += `<tr>
-                <td style="text-align:left;font-weight:600;">${k.nama}</td>
-                <td>${k.wc}</td>
-                <td><span style="background:var(--primary-dim);color:#93c5fd;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">Shift ${k.shift}</span></td>
-                <td><span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">${k.status}</span></td>
+                <td style="text-align:left;font-weight:600;">${escapeHTML(k.nama)}</td>
+                <td>${escapeHTML(k.wc)}</td>
+                <td><span style="background:var(--primary-dim);color:#93c5fd;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">${escapeHTML(shiftText)}</span></td>
+                <td><span style="background:rgba(255,255,255,0.05);color:var(--text-muted);padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;">${escapeHTML(k.status)}</span></td>
                 <td style="text-align:center;"><span style="${sisaLaluStyle}padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;">${sisaLalu} hari</span></td>
                 <td>
-                    <button onclick="editKaryawan('${k.id}')" style="background:rgba(245, 158, 11, 0.15);color:#f59e0b;border:1px solid rgba(245, 158, 11, 0.3);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;margin-right:5px;font-family:'Plus Jakarta Sans',sans-serif;">Edit</button>
-                    <button onclick="hapusKaryawan('${k.id}','${k.nama}')" style="background:rgba(239, 68, 68, 0.12);color:#fca5a5;border:1px solid rgba(239, 68, 68, 0.25);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">Hapus</button>
+                    <button onclick='editKaryawan(${JSON.stringify(k.id)})' style="background:rgba(245, 158, 11, 0.15);color:#f59e0b;border:1px solid rgba(245, 158, 11, 0.3);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;margin-right:5px;font-family:'Plus Jakarta Sans',sans-serif;">Edit</button>
+                    <button onclick='hapusKaryawan(${JSON.stringify(k.id)})' style="background:rgba(239, 68, 68, 0.12);color:#fca5a5;border:1px solid rgba(239, 68, 68, 0.25);padding:5px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">Hapus</button>
                 </td>
             </tr>`;
         });
@@ -3725,12 +3829,14 @@
         document.getElementById('btn-cancel-edit').style.display = "none";
     }
 
-    function hapusKaryawan(id, nama) {
+    function hapusKaryawan(id) {
+        const emp = masterKaryawan.find(k => k.id === id);
+        const nama = emp?.nama || 'karyawan ini';
         if (confirm(`Yakin hapus ${nama}?`)) {
             db.collection("master_karyawan").doc(id).delete().then(() => {
                 showToast(`${nama} dihapus`, "#6b7280");
                 loadDataUtama(); setTimeout(renderTabelMaster, 800);
-            });
+            }).catch(err => showToast('Gagal hapus: ' + err.message, '#ef4444'));
         }
     }
 
@@ -3892,10 +3998,7 @@
     // Invalidate cache saat ada perubahan absensi (supaya cuti realtime)
     function invalidateCutiCache() { _cutiRawData = []; }
 
-    function escapeHTMLCuti(s) {
-        const m = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"};
-        return String(s).replace(/[&<>"']/g, c => m[c]);
-    }
+    function escapeHTMLCuti(s) { return escapeHTML(s); }
 
 
 
@@ -4362,6 +4465,43 @@
         }
     }
 
+
+
+    // ─── EXPORT LAPORAN CSV ───
+    function tableToCsv(table) {
+        const rows = Array.from(table.querySelectorAll('tr'));
+        return rows.map(row => Array.from(row.querySelectorAll('th,td')).map(cell => {
+            const value = cell.innerText.replace(/\s+/g, ' ').trim();
+            return '"' + value.replace(/"/g, '""') + '"';
+        }).join(',')).join('\n');
+    }
+
+    function downloadCsv(filename, csv) {
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportAreaCsv(type) {
+        const shift = document.getElementById('shift-select').value || 'semua';
+        const prefix = getMonthPrefixFromDateValue(document.getElementById('date-select').value);
+        const table = type === 'rekap'
+            ? document.querySelector('#body-rekap')?.closest('table')
+            : document.querySelector('#body-harian')?.closest('table');
+
+        if (!table) return showToast('Tabel belum tersedia', '#ef4444');
+        const csv = tableToCsv(table);
+        const cleanArea = String(activeArea || 'area').toLowerCase().replace(/\s+/g, '-');
+        const filename = `absensi-${cleanArea}-shift-${shift}-${prefix}-${type}.csv`;
+        downloadCsv(filename, csv);
+        showToast('CSV berhasil dibuat ✅', '#10b981');
+    }
 
     // ─── PIN SYSTEM ───
     const _pinDefaults = {

@@ -130,7 +130,7 @@
         }
 
         .logo-text {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
             letter-spacing: -0.3px;
             color: var(--text);
@@ -756,8 +756,8 @@
         .modal-status-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
         .btn-status-modal {
@@ -1126,7 +1126,7 @@
             border: none;
             border-radius: 10px;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
             cursor: pointer;
             transition: all 0.2s;
@@ -2728,6 +2728,291 @@
             transform: translateY(-1px);
         }
 
+    
+
+
+        /* ─── QUICK SHIFT SELECTOR CARD ─── */
+        .shift-selector-card {
+            position: relative;
+            margin: -4px 0 14px;
+            padding: 14px;
+            background: linear-gradient(145deg, rgba(15,23,42,0.92), rgba(17,24,39,0.76));
+            border: 1px solid rgba(129,140,248,0.22);
+            border-radius: 18px;
+            box-shadow: 0 16px 44px rgba(2,6,23,0.26), inset 0 1px 0 rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        .shift-selector-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(99,102,241,0.15), transparent 30%),
+                radial-gradient(circle at 88% 100%, rgba(59,130,246,0.10), transparent 30%);
+            pointer-events: none;
+        }
+
+        .shift-selector-card > * { position: relative; z-index: 1; }
+
+        .shift-selector-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .shift-selector-kicker {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #A5B4FC;
+            margin-bottom: 3px;
+        }
+
+        .shift-selector-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        .shift-selector-note {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94A3B8;
+            margin-top: 3px;
+        }
+
+        .shift-selector-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .shift-select-card {
+            border: 1px solid rgba(129,140,248,0.22);
+            background: rgba(2,6,23,0.28);
+            border-radius: 14px;
+            padding: 10px 12px;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text);
+            transition: all 0.16s;
+            min-height: 66px;
+        }
+
+        .shift-select-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(165,180,252,0.45);
+            background: rgba(99,102,241,0.13);
+            box-shadow: 0 14px 34px rgba(2,6,23,0.28);
+        }
+
+        .shift-select-card.active {
+            background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(59,130,246,0.13));
+            border-color: rgba(165,180,252,0.72);
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.18), 0 18px 40px rgba(2,6,23,0.30);
+        }
+
+        .shift-select-label {
+            display: block;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.9px;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            margin-bottom: 4px;
+        }
+
+        .shift-select-name {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 19px;
+            font-weight: 900;
+            color: #F8FAFC;
+            margin-bottom: 3px;
+        }
+
+        .shift-select-hint {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94A3B8;
+        }
+
+        @media (max-width: 760px) {
+            .shift-selector-grid { grid-template-columns: 1fr; }
+            .shift-selector-head { flex-direction: column; }
+        }
+
+        /* ─── CONTINENTAL SHIFT SCHEDULE CARD ─── */
+        .continental-card {
+            position: relative;
+            margin: -4px 0 16px;
+            padding: 14px;
+            background: linear-gradient(145deg, rgba(15,23,42,0.94), rgba(30,41,59,0.76));
+            border: 1px solid rgba(129,140,248,0.24);
+            border-radius: 18px;
+            box-shadow: 0 16px 44px rgba(2,6,23,0.28), inset 0 1px 0 rgba(255,255,255,0.05);
+            overflow: hidden;
+        }
+
+        .continental-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background:
+                radial-gradient(circle at 8% 0%, rgba(99,102,241,0.18), transparent 32%),
+                radial-gradient(circle at 92% 100%, rgba(16,185,129,0.12), transparent 30%);
+            pointer-events: none;
+        }
+
+        .continental-card > * { position: relative; z-index: 1; }
+
+        .continental-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .continental-kicker {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #A5B4FC;
+            margin-bottom: 3px;
+        }
+
+        .continental-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.2px;
+        }
+
+        .continental-period {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 800;
+            color: #C7D2FE;
+            background: rgba(99,102,241,0.16);
+            border: 1px solid rgba(129,140,248,0.28);
+            border-radius: 999px;
+            padding: 4px 9px;
+            white-space: nowrap;
+        }
+
+        .continental-shift-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .continental-roster-card {
+            border: 1px solid rgba(129,140,248,0.22);
+            background: rgba(2,6,23,0.28);
+            border-radius: 14px;
+            padding: 10px 12px;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text);
+            transition: all 0.16s;
+            min-height: 66px;
+        }
+
+        .continental-roster-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(165,180,252,0.45);
+            background: rgba(99,102,241,0.13);
+            box-shadow: 0 14px 34px rgba(2,6,23,0.28);
+        }
+
+        .continental-roster-card.active {
+            background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(16,185,129,0.13));
+            border-color: rgba(165,180,252,0.72);
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.18), 0 18px 40px rgba(2,6,23,0.30);
+        }
+
+        .continental-roster-label {
+            display: block;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.9px;
+            text-transform: uppercase;
+            color: var(--text-faint);
+            margin-bottom: 4px;
+        }
+
+        .continental-roster-group {
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 19px;
+            font-weight: 900;
+            color: #F8FAFC;
+            margin-bottom: 3px;
+        }
+
+        .continental-roster-hint {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94A3B8;
+        }
+
+        .continental-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .continental-off-chip,
+        .continental-note-chip,
+        .continental-missing-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 5px 9px;
+            line-height: 1.4;
+        }
+
+        .continental-off-chip {
+            background: rgba(148,163,184,0.10);
+            border: 1px solid rgba(148,163,184,0.20);
+            color: #CBD5E1;
+        }
+
+        .continental-note-chip {
+            background: rgba(245,158,11,0.12);
+            border: 1px solid rgba(245,158,11,0.28);
+            color: #FCD34D;
+        }
+
+        .continental-missing-chip {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.28);
+            color: #FCA5A5;
+        }
+
+        @media (max-width: 760px) {
+            .continental-shift-grid { grid-template-columns: 1fr; }
+            .continental-card-head { flex-direction: column; }
+            .continental-period { align-self: flex-start; }
+        }
+
     </style>
 </head>
 <body>
@@ -2854,6 +3139,10 @@
                     <option value="1">Shift 1</option>
                     <option value="2">Shift 2</option>
                     <option value="3">Shift 3</option>
+                    <option value="Continental Grup 1">Continental Grup 1</option>
+                    <option value="Continental Grup 2">Continental Grup 2</option>
+                    <option value="Continental Grup 3">Continental Grup 3</option>
+                    <option value="Continental Grup 4">Continental Grup 4</option>
                 </select>
             </div>
             <div class="charts-grid">
@@ -2877,16 +3166,48 @@
         <!-- ═══ VIEW AREA ═══ -->
         <div id="view-area" style="display:none;">
             <div class="filter-panel">
-                <div class="filter-label">Filter</div>
-                <select class="form-ctrl" id="shift-select" onchange="refreshArea()">
-                    <option value="" disabled selected>Pilih Shift</option>
+                <div class="filter-label">Tanggal</div>
+                <input type="date" class="form-ctrl" id="date-select" onchange="refreshArea()">
+                <select class="form-ctrl" id="shift-select" onchange="refreshArea()" style="display:none;">
+                    <option value="" disabled selected>Pilih Shift / Grup</option>
                     <option value="1">Shift 1</option>
                     <option value="2">Shift 2</option>
                     <option value="3">Shift 3</option>
-                    <option value="Rolling">Rolling (Mandor)</option>
+                    <option value="Continental Grup 1">Continental Grup 1</option>
+                    <option value="Continental Grup 2">Continental Grup 2</option>
+                    <option value="Continental Grup 3">Continental Grup 3</option>
+                    <option value="Continental Grup 4">Continental Grup 4</option>
                 </select>
-                <input type="date" class="form-ctrl" id="date-select" onchange="refreshArea()">
             </div>
+
+            <div id="shift-selector-card" class="shift-selector-card">
+                <div class="shift-selector-head">
+                    <div>
+                        <div class="shift-selector-kicker">⚡ Pilih Shift Reguler</div>
+                        <div class="shift-selector-title">Klik Shift 1, 2, atau 3</div>
+                        <div class="shift-selector-note">Rolling / Mandor otomatis ikut di semua shift dan grup.</div>
+                    </div>
+                </div>
+                <div class="shift-selector-grid">
+                    <button type="button" class="shift-select-card" data-shift-card="1" onclick="selectShiftCard('1')">
+                        <span class="shift-select-label">Shift Reguler</span>
+                        <span class="shift-select-name">Shift 1</span>
+                        <span class="shift-select-hint">Input Shift 1</span>
+                    </button>
+                    <button type="button" class="shift-select-card" data-shift-card="2" onclick="selectShiftCard('2')">
+                        <span class="shift-select-label">Shift Reguler</span>
+                        <span class="shift-select-name">Shift 2</span>
+                        <span class="shift-select-hint">Input Shift 2</span>
+                    </button>
+                    <button type="button" class="shift-select-card" data-shift-card="3" onclick="selectShiftCard('3')">
+                        <span class="shift-select-label">Shift Reguler</span>
+                        <span class="shift-select-name">Shift 3</span>
+                        <span class="shift-select-hint">Input Shift 3</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="continental-schedule-card" class="continental-card" style="display:none;"></div>
 
             <div class="tab-row" id="tab-row" style="display:none;">
                 <div class="tabs">
@@ -2965,6 +3286,10 @@
                     <option value="2">Shift 2</option>
                     <option value="3">Shift 3</option>
                     <option value="Rolling">Rolling</option>
+                    <option value="Continental Grup 1">Continental Grup 1</option>
+                    <option value="Continental Grup 2">Continental Grup 2</option>
+                    <option value="Continental Grup 3">Continental Grup 3</option>
+                    <option value="Continental Grup 4">Continental Grup 4</option>
                 </select>
                 <input type="text" class="form-ctrl" id="cuti-search" placeholder="🔍 Cari nama..." oninput="filterCutiTable()" style="max-width:220px;">
             </div>
@@ -3068,6 +3393,10 @@
                                 <option value="2">Shift 2</option>
                                 <option value="3">Shift 3</option>
                                 <option value="Rolling">Rolling</option>
+                                <option value="Continental Grup 1">Continental Grup 1</option>
+                                <option value="Continental Grup 2">Continental Grup 2</option>
+                                <option value="Continental Grup 3">Continental Grup 3</option>
+                                <option value="Continental Grup 4">Continental Grup 4</option>
                             </select>
                         </div>
                     </div>
@@ -3137,6 +3466,10 @@
                         <option value="2">Shift 2</option>
                         <option value="3">Shift 3</option>
                         <option value="Rolling">Rolling</option>
+                        <option value="Continental Grup 1">Continental Grup 1</option>
+                        <option value="Continental Grup 2">Continental Grup 2</option>
+                        <option value="Continental Grup 3">Continental Grup 3</option>
+                        <option value="Continental Grup 4">Continental Grup 4</option>
                     </select>
                     <select class="form-ctrl" id="new-status">
                         <option value="" disabled selected>Status</option>
@@ -3341,7 +3674,733 @@
     const dateSelectEl = document.getElementById('date-select');
     dateSelectEl.value = toLocalDateInputValue(new Date());
     renderHeaderHarianForDate(dateSelectEl.value);
-    dateSelectEl.addEventListener('change', () => renderHeaderHarianForDate(dateSelectEl.value));
+    dateSelectEl.addEventListener('change', () => {
+        renderHeaderHarianForDate(dateSelectEl.value);
+        renderContinentalScheduleCard(dateSelectEl.value, document.getElementById('shift-select')?.value || '');
+    });
+
+
+
+    // ─── CONTINENTAL SHIFT SCHEDULE — PDF Juni 2026 s.d Oktober 2026 ───
+    const CONTINENTAL_SHIFT_VALUES = [
+        'Continental Grup 1',
+        'Continental Grup 2',
+        'Continental Grup 3',
+        'Continental Grup 4'
+    ];
+
+    const CONTINENTAL_SCHEDULE = {
+        "2026-06-28": [
+                1,
+                4,
+                3
+        ],
+        "2026-06-29": [
+                1,
+                4,
+                3
+        ],
+        "2026-06-30": [
+                1,
+                4,
+                3
+        ],
+        "2026-07-01": [
+                1,
+                2,
+                3
+        ],
+        "2026-07-02": [
+                1,
+                2,
+                3
+        ],
+        "2026-07-03": [
+                1,
+                2,
+                4
+        ],
+        "2026-07-04": [
+                1,
+                2,
+                4
+        ],
+        "2026-07-05": [
+                3,
+                2,
+                4
+        ],
+        "2026-07-06": [
+                3,
+                2,
+                4
+        ],
+        "2026-07-07": [
+                3,
+                1,
+                4
+        ],
+        "2026-07-08": [
+                3,
+                1,
+                4
+        ],
+        "2026-07-09": [
+                3,
+                1,
+                2
+        ],
+        "2026-07-10": [
+                3,
+                1,
+                2
+        ],
+        "2026-07-11": [
+                4,
+                1,
+                2
+        ],
+        "2026-07-12": [
+                4,
+                1,
+                2
+        ],
+        "2026-07-13": [
+                4,
+                3,
+                2
+        ],
+        "2026-07-14": [
+                4,
+                3,
+                2
+        ],
+        "2026-07-15": [
+                4,
+                3,
+                1
+        ],
+        "2026-07-16": [
+                4,
+                3,
+                1
+        ],
+        "2026-07-17": [
+                2,
+                3,
+                1
+        ],
+        "2026-07-18": [
+                2,
+                3,
+                1
+        ],
+        "2026-07-19": [
+                2,
+                4,
+                1
+        ],
+        "2026-07-20": [
+                2,
+                4,
+                1
+        ],
+        "2026-07-21": [
+                2,
+                4,
+                3
+        ],
+        "2026-07-22": [
+                2,
+                4,
+                3
+        ],
+        "2026-07-23": [
+                1,
+                4,
+                3
+        ],
+        "2026-07-24": [
+                1,
+                4,
+                3
+        ],
+        "2026-07-25": [
+                1,
+                2,
+                3
+        ],
+        "2026-07-26": [
+                1,
+                2,
+                3
+        ],
+        "2026-07-27": [
+                1,
+                2,
+                4
+        ],
+        "2026-07-28": [
+                1,
+                2,
+                4
+        ],
+        "2026-07-29": [
+                3,
+                2,
+                4
+        ],
+        "2026-07-30": [
+                3,
+                2,
+                4
+        ],
+        "2026-07-31": [
+                3,
+                1,
+                4
+        ],
+        "2026-08-01": [
+                3,
+                1,
+                4
+        ],
+        "2026-08-02": [
+                3,
+                1,
+                2
+        ],
+        "2026-08-03": [
+                3,
+                1,
+                2
+        ],
+        "2026-08-04": [
+                4,
+                1,
+                2
+        ],
+        "2026-08-05": [
+                4,
+                1,
+                2
+        ],
+        "2026-08-06": [
+                4,
+                3,
+                2
+        ],
+        "2026-08-07": [
+                4,
+                3,
+                2
+        ],
+        "2026-08-08": [
+                4,
+                3,
+                1
+        ],
+        "2026-08-09": [
+                4,
+                3,
+                1
+        ],
+        "2026-08-10": [
+                2,
+                3,
+                1
+        ],
+        "2026-08-11": [
+                2,
+                3,
+                1
+        ],
+        "2026-08-12": [
+                2,
+                4,
+                1
+        ],
+        "2026-08-13": [
+                2,
+                4,
+                1
+        ],
+        "2026-08-14": [
+                2,
+                4,
+                3
+        ],
+        "2026-08-15": [
+                2,
+                4,
+                3
+        ],
+        "2026-08-16": [
+                1,
+                4,
+                3
+        ],
+        "2026-08-18": [
+                1,
+                4,
+                3
+        ],
+        "2026-08-19": [
+                1,
+                2,
+                3
+        ],
+        "2026-08-20": [
+                1,
+                2,
+                3
+        ],
+        "2026-08-21": [
+                1,
+                2,
+                4
+        ],
+        "2026-08-22": [
+                1,
+                2,
+                4
+        ],
+        "2026-08-23": [
+                3,
+                2,
+                4
+        ],
+        "2026-08-25": [
+                3,
+                2,
+                4
+        ],
+        "2026-08-26": [
+                3,
+                1,
+                4
+        ],
+        "2026-08-27": [
+                3,
+                1,
+                4
+        ],
+        "2026-08-28": [
+                3,
+                1,
+                2
+        ],
+        "2026-08-29": [
+                3,
+                1,
+                2
+        ],
+        "2026-08-30": [
+                4,
+                1,
+                2
+        ],
+        "2026-08-31": [
+                4,
+                1,
+                2
+        ],
+        "2026-09-01": [
+                4,
+                3,
+                2
+        ],
+        "2026-09-02": [
+                4,
+                3,
+                2
+        ],
+        "2026-09-03": [
+                4,
+                3,
+                1
+        ],
+        "2026-09-04": [
+                4,
+                3,
+                1
+        ],
+        "2026-09-05": [
+                2,
+                3,
+                1
+        ],
+        "2026-09-06": [
+                2,
+                3,
+                1
+        ],
+        "2026-09-07": [
+                2,
+                4,
+                1
+        ],
+        "2026-09-08": [
+                2,
+                4,
+                1
+        ],
+        "2026-09-09": [
+                2,
+                4,
+                3
+        ],
+        "2026-09-10": [
+                2,
+                4,
+                3
+        ],
+        "2026-09-11": [
+                1,
+                4,
+                3
+        ],
+        "2026-09-12": [
+                1,
+                4,
+                3
+        ],
+        "2026-09-13": [
+                1,
+                2,
+                3
+        ],
+        "2026-09-14": [
+                1,
+                2,
+                3
+        ],
+        "2026-09-15": [
+                1,
+                2,
+                4
+        ],
+        "2026-09-16": [
+                1,
+                2,
+                4
+        ],
+        "2026-09-17": [
+                3,
+                2,
+                4
+        ],
+        "2026-09-18": [
+                3,
+                2,
+                4
+        ],
+        "2026-09-19": [
+                3,
+                1,
+                4
+        ],
+        "2026-09-20": [
+                3,
+                1,
+                4
+        ],
+        "2026-09-21": [
+                3,
+                1,
+                2
+        ],
+        "2026-09-22": [
+                3,
+                1,
+                2
+        ],
+        "2026-09-23": [
+                4,
+                1,
+                2
+        ],
+        "2026-09-24": [
+                4,
+                1,
+                2
+        ],
+        "2026-09-25": [
+                4,
+                3,
+                2
+        ],
+        "2026-09-26": [
+                4,
+                3,
+                2
+        ],
+        "2026-09-27": [
+                4,
+                3,
+                1
+        ],
+        "2026-09-28": [
+                4,
+                3,
+                1
+        ],
+        "2026-09-29": [
+                2,
+                3,
+                1
+        ],
+        "2026-09-30": [
+                2,
+                3,
+                1
+        ],
+        "2026-10-01": [
+                2,
+                4,
+                1
+        ],
+        "2026-10-02": [
+                2,
+                4,
+                1
+        ],
+        "2026-10-03": [
+                2,
+                4,
+                3
+        ],
+        "2026-10-04": [
+                2,
+                4,
+                3
+        ],
+        "2026-10-05": [
+                1,
+                4,
+                3
+        ],
+        "2026-10-06": [
+                1,
+                4,
+                3
+        ],
+        "2026-10-07": [
+                1,
+                2,
+                3
+        ],
+        "2026-10-08": [
+                1,
+                2,
+                3
+        ],
+        "2026-10-09": [
+                1,
+                2,
+                4
+        ],
+        "2026-10-10": [
+                1,
+                2,
+                4
+        ],
+        "2026-10-11": [
+                3,
+                2,
+                4
+        ],
+        "2026-10-12": [
+                3,
+                2,
+                4
+        ],
+        "2026-10-13": [
+                3,
+                1,
+                4
+        ],
+        "2026-10-14": [
+                3,
+                1,
+                4
+        ],
+        "2026-10-15": [
+                3,
+                1,
+                2
+        ],
+        "2026-10-16": [
+                3,
+                1,
+                2
+        ],
+        "2026-10-17": [
+                4,
+                1,
+                2
+        ],
+        "2026-10-18": [
+                4,
+                1,
+                2
+        ],
+        "2026-10-19": [
+                4,
+                3,
+                2
+        ],
+        "2026-10-20": [
+                4,
+                3,
+                2
+        ],
+        "2026-10-21": [
+                4,
+                3,
+                1
+        ],
+        "2026-10-22": [
+                4,
+                3,
+                1
+        ],
+        "2026-10-23": [
+                2,
+                3,
+                1
+        ],
+        "2026-10-24": [
+                2,
+                3,
+                1
+        ],
+        "2026-10-25": [
+                2,
+                4,
+                1
+        ],
+        "2026-10-26": [
+                2,
+                4,
+                1
+        ],
+        "2026-10-27": [
+                2,
+                4,
+                3
+        ],
+        "2026-10-28": [
+                2,
+                4,
+                3
+        ]
+};
+
+    const CONTINENTAL_NOTES = {
+        '2026-06-28': 'Grup 1-3-4 Tabungan Libur Natal',
+        '2026-08-17': 'LIBUR Proklamasi Kemerdekaan',
+        '2026-08-24': 'LIBUR Maulid Nabi Muhammad SAW'
+    };
+
+    function isContinentalShift(shift) {
+        return String(shift || '').startsWith('Continental Grup');
+    }
+
+    function getContinentalGroupFromValue(shift) {
+        const m = String(shift || '').match(/Continental Grup\s*(\d+)/i);
+        return m ? Number(m[1]) : null;
+    }
+
+    function getShiftLabel(shift) {
+        if (!shift) return 'Semua Shift';
+        if (shift === 'Rolling') return 'Rolling / Mandor';
+        if (isContinentalShift(shift)) return shift;
+        return 'Shift ' + shift;
+    }
+
+    function formatDateLongID(dateValue) {
+        if (!dateValue) return '-';
+        const d = new Date(dateValue + 'T00:00:00');
+        return d.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
+    function setSelectedShift(shiftValue) {
+        const select = document.getElementById('shift-select');
+        if (!select) return;
+        select.value = shiftValue;
+        refreshArea();
+    }
+
+    function selectShiftCard(shiftValue) {
+        setSelectedShift(shiftValue);
+    }
+
+    function selectContinentalGroup(groupNum) {
+        setSelectedShift('Continental Grup ' + groupNum);
+    }
+
+    function updateShiftCardActive(selectedShift) {
+        document.querySelectorAll('[data-shift-card]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.shiftCard === String(selectedShift || ''));
+        });
+    }
+
+    function renderContinentalScheduleCard(tgl, selectedShift) {
+        const card = document.getElementById('continental-schedule-card');
+        if (!card) return;
+        // Continental hanya tampil di menu Injection.
+        // Di Assembling cukup pakai kartu Shift 1, Shift 2, Shift 3.
+        if (activeArea === 'Assembling') {
+            card.style.display = 'none';
+            card.innerHTML = '';
+            return;
+        }
+        if (!tgl) { card.style.display = 'none'; return; }
+
+        const jadwal = CONTINENTAL_SCHEDULE[tgl];
+        const note = CONTINENTAL_NOTES[tgl];
+        const selectedGroup = getContinentalGroupFromValue(selectedShift);
+        card.style.display = 'block';
+
+        if (!jadwal) {
+            card.innerHTML = `
+                <div class="continental-card-head">
+                    <div>
+                        <div class="continental-kicker">🗓 Jadwal Continental</div>
+                        <div class="continental-title">${escapeHTML(formatDateLongID(tgl))}</div>
+                    </div>
+                    <div class="continental-period">PDF JUN–OKT 2026</div>
+                </div>
+                <div class="continental-meta-row">
+                    <span class="${note ? 'continental-note-chip' : 'continental-missing-chip'}">${escapeHTML(note || 'Jadwal tanggal ini belum ada di PDF continental')}</span>
+                </div>`;
+            return;
+        }
+
+        const offGroup = [1,2,3,4].find(g => !jadwal.includes(g));
+        const cards = jadwal.map((group, idx) => `
+            <button type="button" class="continental-roster-card ${selectedGroup === group ? 'active' : ''}" onclick="selectContinentalGroup(${group})">
+                <span class="continental-roster-label">Shift ${idx + 1}</span>
+                <span class="continental-roster-group">Grup ${group}</span>
+                <span class="continental-roster-hint">Pilih Grup ${group}</span>
+            </button>
+        `).join('');
+
+        card.innerHTML = `
+            <div class="continental-card-head">
+                <div>
+                    <div class="continental-kicker">🗓 Jadwal Continental</div>
+                    <div class="continental-title">${escapeHTML(formatDateLongID(tgl))}</div>
+                </div>
+                <div class="continental-period">PDF JUN–OKT 2026</div>
+            </div>
+            <div class="continental-shift-grid">${cards}</div>
+            <div class="continental-meta-row">
+                <span class="continental-off-chip">🌙 Grup tidak di shift: <strong>Grup ${offGroup}</strong></span>
+                ${note ? `<span class="continental-note-chip">📌 ${escapeHTML(note)}</span>` : ''}
+            </div>`;
+    }
 
     // ─── NAVIGASI ───
     function updateNav(activeId, title) {
@@ -3377,6 +4436,8 @@
         updateNav(navId, `Area ${areaName}`);
         document.getElementById('view-area').style.display = 'block';
         document.getElementById('shift-select').value = "";
+        renderContinentalScheduleCard(document.getElementById('date-select').value, '');
+        updateShiftCardActive('');
         document.getElementById('tab-row').style.display = 'none';
         document.getElementById('search-grid').style.display = 'none';
         document.getElementById('search-grid').value = '';
@@ -3507,6 +4568,8 @@
     function refreshArea() {
         const shift = document.getElementById('shift-select').value;
         const tgl = document.getElementById('date-select').value;
+        renderContinentalScheduleCard(tgl, shift);
+        updateShiftCardActive(shift);
         if (!shift || !tgl) return;
 
         document.getElementById('tab-row').style.display = 'flex';
@@ -3527,7 +4590,7 @@
         const tahun = tgl.substring(0, 4);
         renderHeaderHarianForDate(tgl);
         const labelBulan = monthLabelFromPrefix(prefix);
-        document.getElementById('report-month-label').textContent = `📅 ${activeArea} · Shift ${shift} · ${labelBulan}`;
+        document.getElementById('report-month-label').textContent = `📅 ${activeArea} · ${getShiftLabel(shift)} · ${labelBulan}`;
         document.getElementById('rekap-title').textContent = `Rekapitulasi Mangkir ${labelBulan}`;
         document.getElementById('harian-title').textContent = `Detail Kehadiran Harian ${labelBulan}`;
 
@@ -3574,7 +4637,7 @@
                 else if (st.includes('½')) { btnCls = 's-setengah'; btnTxt = `½ ${st} · ${absen.jam_pulang}`; }
             }
 
-            const shiftLabel = k.shift === 'Rolling' ? 'Fleksibel' : `Shift ${k.shift}`;
+            const shiftLabel = getShiftLabel(k.shift);
             const safeNama = escapeHTML(k.nama);
             const avatar = escapeHTML(k.nama.substring(0, 2).toUpperCase());
             container.innerHTML += `
@@ -3762,7 +4825,7 @@
             const sisaLaluStyle = sisaLalu > 0
                 ? 'background:rgba(46,213,115,0.12);color:#22c55e;border:1px solid rgba(46,213,115,0.25);'
                 : 'background:rgba(255,255,255,0.04);color:var(--text-faint);';
-            const shiftText = k.shift === 'Rolling' ? 'Rolling' : 'Shift ' + k.shift;
+            const shiftText = getShiftLabel(k.shift);
             tb.innerHTML += `<tr>
                 <td style="text-align:left;font-weight:600;">${escapeHTML(k.nama)}</td>
                 <td>${escapeHTML(k.wc)}</td>
@@ -3939,7 +5002,7 @@
             const terpakai  = cutiMap[k.id] || 0;
             const sisa      = Math.max(0, totalJatah - terpakai);
             const pct       = Math.min(100, (terpakai / totalJatah) * 100);
-            const shiftLabel = k.shift === 'Rolling' ? 'Rolling' : 'Shift ' + k.shift;
+            const shiftLabel = getShiftLabel(k.shift);
 
             // Warna progress bar & badge
             let barColor, badgeClass, statusIcon;
@@ -4498,7 +5561,8 @@
         if (!table) return showToast('Tabel belum tersedia', '#ef4444');
         const csv = tableToCsv(table);
         const cleanArea = String(activeArea || 'area').toLowerCase().replace(/\s+/g, '-');
-        const filename = `absensi-${cleanArea}-shift-${shift}-${prefix}-${type}.csv`;
+        const cleanShift = getShiftLabel(shift).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const filename = `absensi-${cleanArea}-${cleanShift}-${prefix}-${type}.csv`;
         downloadCsv(filename, csv);
         showToast('CSV berhasil dibuat ✅', '#10b981');
     }

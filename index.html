@@ -1118,6 +1118,70 @@
             font-weight: 700;
         }
 
+
+        .cb-employee-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cb-employee-hint {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-faint);
+        }
+
+        .cb-excluded-badge {
+            display: none;
+            font-size: 11px;
+            font-weight: 800;
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.14);
+            border: 1px solid rgba(239, 68, 68, 0.28);
+            padding: 5px 10px;
+            border-radius: 999px;
+        }
+
+        .cb-emp-chip-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 4px 9px;
+            margin: 3px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .cb-emp-chip-btn:hover {
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.35);
+            background: rgba(239, 68, 68, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .cb-emp-chip-btn.excluded {
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.38);
+            background: rgba(239, 68, 68, 0.14);
+            text-decoration: line-through;
+            opacity: 0.75;
+        }
+
+        .cb-emp-chip-btn .cb-chip-x {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
         .btn-terapkan {
             width: 100%;
             padding: 14px;
@@ -3435,7 +3499,13 @@
                 <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Tanggal yang akan diinput:</div>
                 <div class="cb-date-chips" id="cb-date-chips"></div>
 
-                <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:8px;">Karyawan terdampak:</div>
+                <div class="cb-employee-toolbar">
+                    <div>
+                        <div style="font-size:11px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; color:var(--text-faint); margin-bottom:4px;">Karyawan terdampak:</div>
+                        <div class="cb-employee-hint">Klik nama untuk cancel/kecualikan dari event ini.</div>
+                    </div>
+                    <div class="cb-excluded-badge" id="cb-excluded-badge">0 karyawan dicancel</div>
+                </div>
                 <div style="background:var(--bg-3); border:1px solid var(--border); border-radius:10px; padding:14px; max-height:180px; overflow-y:auto; margin-bottom:18px; font-size:12px; color:var(--text-muted); line-height:2;">
                     <span id="cb-emp-list"></span>
                 </div>
@@ -5066,11 +5136,15 @@
 
 
     // ─── CUTI BERSAMA ───
-    let _cbEmps = [];   // karyawan terdampak (hasil preview)
-    let _cbDates = [];  // tanggal yang dipilih
+    let _cbEmps = [];             // karyawan terdampak final (setelah cancel)
+    let _cbCandidateEmps = [];    // karyawan hasil filter sebelum cancel
+    let _cbExcludedIds = new Set(); // karyawan yang dicancel dari event cuti bersama
+    let _cbDates = [];            // tanggal yang dipilih
 
     function cbInit(doLoadEvents) {
         _cbEmps = [];
+        _cbCandidateEmps = [];
+        _cbExcludedIds = new Set();
         _cbDates = [];
         _cbEditNama = null;
         document.getElementById('cb-nama').value = '';
@@ -5145,14 +5219,9 @@
         // Hapus duplikat & sort tanggal
         _cbDates = [...new Set(_cbDates)].sort();
 
-        _cbEmps = cbGetFilteredEmps();
-        if (_cbEmps.length === 0) return showToast('Tidak ada karyawan sesuai filter!', '#ef4444');
-
-        const totalRecord = _cbEmps.length * _cbDates.length;
-
-        document.getElementById('cb-st-karyawan').textContent = _cbEmps.length;
-        document.getElementById('cb-st-hari').textContent = _cbDates.length;
-        document.getElementById('cb-st-record').textContent = totalRecord;
+        _cbCandidateEmps = cbGetFilteredEmps();
+        _cbExcludedIds = new Set();
+        if (_cbCandidateEmps.length === 0) return showToast('Tidak ada karyawan sesuai filter!', '#ef4444');
 
         // Date chips
         const chipsEl = document.getElementById('cb-date-chips');
@@ -5166,11 +5235,7 @@
             chipsEl.appendChild(chip);
         });
 
-        // Emp list
-        const empListEl = document.getElementById('cb-emp-list');
-        empListEl.innerHTML = _cbEmps.map(function(k) {
-            return '<span style="display:inline-block;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:2px 8px;margin:2px;font-size:11px;">' + escapeHTMLCuti(k.nama) + '</span>';
-        }).join('');
+        cbRenderPreviewEmployees();
 
         // Reset progress
         document.getElementById('cb-prog-bar').style.display = 'none';
@@ -5184,15 +5249,60 @@
         document.getElementById('cb-preview-card').scrollIntoView({ behavior: 'smooth' });
     }
 
+    function cbRenderPreviewEmployees() {
+        const empListEl = document.getElementById('cb-emp-list');
+        const badge = document.getElementById('cb-excluded-badge');
+        if (!empListEl) return;
+
+        _cbEmps = _cbCandidateEmps.filter(function(k) { return !_cbExcludedIds.has(k.id); });
+        const excludedCount = _cbCandidateEmps.length - _cbEmps.length;
+        const totalRecord = _cbEmps.length * _cbDates.length;
+
+        document.getElementById('cb-st-karyawan').textContent = _cbEmps.length;
+        document.getElementById('cb-st-hari').textContent = _cbDates.length;
+        document.getElementById('cb-st-record').textContent = totalRecord;
+
+        if (badge) {
+            badge.style.display = excludedCount > 0 ? 'inline-flex' : 'none';
+            badge.textContent = excludedCount + ' karyawan dicancel';
+        }
+
+        empListEl.innerHTML = _cbCandidateEmps.map(function(k, idx) {
+            const excluded = _cbExcludedIds.has(k.id);
+            return '<button type="button" class="cb-emp-chip-btn ' + (excluded ? 'excluded' : '') + '" onclick="cbToggleEmployeeCancel(' + idx + ')" title="Klik untuk ' + (excluded ? 'masukkan lagi' : 'cancel dari event') + '">' 
+                + escapeHTMLCuti(k.nama)
+                + '<span class="cb-chip-x">' + (excluded ? '↩' : '×') + '</span>'
+                + '</button>';
+        }).join('');
+
+        const btnT = document.getElementById('btn-terapkan');
+        if (btnT) btnT.disabled = _cbEmps.length === 0;
+    }
+
+    function cbToggleEmployeeCancel(idx) {
+        const emp = _cbCandidateEmps[idx];
+        if (!emp) return;
+        if (_cbExcludedIds.has(emp.id)) {
+            _cbExcludedIds.delete(emp.id);
+            showToast(emp.nama + ' dimasukkan lagi ke event.', '#10b981');
+        } else {
+            _cbExcludedIds.add(emp.id);
+            showToast(emp.nama + ' dicancel dari event cuti bersama.', '#f59e0b');
+        }
+        cbRenderPreviewEmployees();
+    }
+
     async function cbTerapkan() {
         if (_cbEmps.length === 0 || _cbDates.length === 0) return;
 
         const nama = document.getElementById('cb-nama').value.trim();
         const total = _cbEmps.length * _cbDates.length;
+        const excludedCount = _cbExcludedIds ? _cbExcludedIds.size : 0;
+        const excludedNote = excludedCount > 0 ? '\n\nDicancel/dikecualikan: ' + excludedCount + ' karyawan.' : '';
                 const _isEdit = _cbEditNama !== null;
         const _konfirmMsg = _isEdit
-            ? 'Update event "' + _cbEditNama + '"?\n\nData lama akan dihapus lalu ' + total + ' record baru dibuat.\n\nLanjutkan?'
-            : 'Terapkan "' + nama + '"?\n\n' + _cbDates.length + ' hari x ' + _cbEmps.length + ' karyawan = ' + total + ' record\n\nStatus cuti akan di-overwrite jika sudah ada. Lanjutkan?';
+            ? 'Update event "' + _cbEditNama + '"?\n\nData lama akan dihapus lalu ' + total + ' record baru dibuat.' + excludedNote + '\n\nLanjutkan?'
+            : 'Terapkan "' + nama + '"?\n\n' + _cbDates.length + ' hari x ' + _cbEmps.length + ' karyawan = ' + total + ' record' + excludedNote + '\n\nStatus cuti akan di-overwrite jika sudah ada. Lanjutkan?';
         const konfirm = confirm(_konfirmMsg);
         if (!konfirm) return;
 

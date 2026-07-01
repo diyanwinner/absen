@@ -3747,6 +3747,7 @@
     dateSelectEl.addEventListener('change', () => {
         renderHeaderHarianForDate(dateSelectEl.value);
         renderContinentalScheduleCard(dateSelectEl.value, document.getElementById('shift-select')?.value || '');
+        loadDataUtama();
     });
 
 
@@ -4382,6 +4383,43 @@
         return m ? Number(m[1]) : null;
     }
 
+    function getSelectedRosterDate() {
+        const el = document.getElementById('date-select');
+        return el?.value || toLocalDateInputValue(new Date());
+    }
+
+    function getRosterShiftFromContinentalGroup(groupNum, dateValue) {
+        const jadwal = CONTINENTAL_SCHEDULE[dateValue || getSelectedRosterDate()];
+        if (!jadwal || !groupNum) return null;
+        const idx = jadwal.indexOf(Number(groupNum));
+        return idx >= 0 ? String(idx + 1) : null;
+    }
+
+    function getOperationalShiftForEmployee(emp, dateValue) {
+        const shift = String(emp?.shift || '');
+        if (['1', '2', '3'].includes(shift)) return shift;
+        if (shift === 'Rolling') return 'Rolling';
+        if (isContinentalShift(shift)) {
+            return getRosterShiftFromContinentalGroup(getContinentalGroupFromValue(shift), dateValue);
+        }
+        return null;
+    }
+
+    function recordMatchesShiftFilter(record, filterShift) {
+        if (!filterShift || filterShift === 'Semua') return true;
+        const recShift = String(record?.shift || '');
+        if (recShift === 'Rolling') return true;
+        if (recShift === filterShift) return true;
+        if (['1', '2', '3'].includes(String(filterShift)) && isContinentalShift(recShift)) {
+            const rosterShift = getRosterShiftFromContinentalGroup(
+                getContinentalGroupFromValue(recShift),
+                record?.tanggal_absen
+            );
+            return rosterShift === String(filterShift);
+        }
+        return false;
+    }
+
     function getShiftLabel(shift) {
         if (!shift) return 'Semua Shift';
         if (shift === 'Rolling') return 'Rolling / Mandor';
@@ -4544,6 +4582,8 @@
             let t_op = 0, t_tetap = 0, t_yayasan = 0;
             let s1_inj = 0, s1_assy = 0, s2_inj = 0, s2_assy = 0, s3_inj = 0, s3_assy = 0;
 
+            const rosterDate = getSelectedRosterDate();
+
             snap.forEach(doc => {
                 let d = doc.data(); d.id = doc.id;
                 masterKaryawan.push(d);
@@ -4551,9 +4591,13 @@
                     t_op++;
                     if (d.status === "Tetap") t_tetap++;
                     else if (d.status === "Yayasan") t_yayasan++;
-                    if (d.shift === "1") { if (d.wc === "Injection") s1_inj++; else s1_assy++; }
-                    else if (d.shift === "2") { if (d.wc === "Injection") s2_inj++; else s2_assy++; }
-                    else if (d.shift === "3") { if (d.wc === "Injection") s3_inj++; else s3_assy++; }
+
+                    // Dashboard shift sekarang ikut membaca jadwal Continental.
+                    // Contoh: jika hari ini Shift 1 = Grup 3, maka karyawan "Continental Grup 3" ikut masuk hitungan Shift 1.
+                    const opShift = getOperationalShiftForEmployee(d, rosterDate);
+                    if (opShift === "1") { if (d.wc === "Injection") s1_inj++; else s1_assy++; }
+                    else if (opShift === "2") { if (d.wc === "Injection") s2_inj++; else s2_assy++; }
+                    else if (opShift === "3") { if (d.wc === "Injection") s3_inj++; else s3_assy++; }
                 }
             });
             masterKaryawan.sort((a, b) => a.nama.localeCompare(b.nama));
@@ -4583,7 +4627,7 @@
             snap.forEach(doc => {
                 const d = doc.data();
                 if (d.tanggal_absen?.startsWith(prefix) && d.keterangan !== 'C') {
-                    if (filterShift !== "Semua" && d.shift !== filterShift && d.shift !== "Rolling") return;
+                    if (!recordMatchesShiftFilter(d, filterShift)) return;
                     if (d.work_center === 'Injection') cInj[d.nama] = (cInj[d.nama] || 0) + 1;
                     if (d.work_center === 'Assembling') cAssy[d.nama] = (cAssy[d.nama] || 0) + 1;
                 }

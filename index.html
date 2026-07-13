@@ -377,6 +377,29 @@
             margin: 0 6px;
         }
 
+        .shift-breakdown {
+            margin-top: 8px;
+            padding-top: 7px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            line-height: 1.25;
+            color: var(--text-faint);
+        }
+
+        .shift-breakdown .bd-line {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .shift-breakdown b { color: var(--text-muted); font-weight: 800; }
+        .shift-breakdown .bd-cont { color: #a5b4fc; }
+        .shift-breakdown .bd-roll { color: #fcd34d; }
+
         .tag-inj { color: #93c5fd; }
         .tag-assy { color: var(--accent); }
 
@@ -3077,6 +3100,77 @@
             .continental-period { align-self: flex-start; }
         }
 
+
+        /* ─── MASTER KARYAWAN FILTER SUMMARY ─── */
+        .master-filter-panel {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .master-filter-panel .form-ctrl {
+            flex: none;
+            min-width: 160px;
+            max-width: 220px;
+        }
+        .master-count-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .master-count-chip {
+            border: 1px solid rgba(129,140,248,0.20);
+            background: rgba(15,23,42,0.58);
+            color: var(--text-muted);
+            border-radius: 14px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.15s ease;
+            min-height: 44px;
+        }
+        .master-count-chip:hover {
+            border-color: rgba(165,180,252,0.38);
+            color: var(--text);
+            transform: translateY(-1px);
+            background: rgba(99,102,241,0.12);
+        }
+        .master-count-chip.active {
+            border-color: rgba(165,180,252,0.55);
+            background: rgba(99,102,241,0.20);
+            color: #C7D2FE;
+            box-shadow: 0 0 22px rgba(99,102,241,0.14);
+        }
+        .master-count-name {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .master-count-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .master-filter-note {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-faint);
+            margin-left: auto;
+        }
+        @media (max-width: 760px) {
+            .master-filter-panel .form-ctrl { max-width: none; width: 100%; }
+            .master-filter-note { width: 100%; margin-left: 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -3176,6 +3270,7 @@
                         <div class="split-divider"></div>
                         <div class="split-item"><span class="split-tag tag-assy">ASSY</span><div class="split-num" id="st-s1-assy">-</div></div>
                     </div>
+                    <div class="shift-breakdown" id="st-s1-breakdown"></div>
                 </div>
                 <div class="stat-card split-card" style="--card-accent: var(--text-faint);">
                     <div class="stat-label">Shift 2</div>
@@ -3184,6 +3279,7 @@
                         <div class="split-divider"></div>
                         <div class="split-item"><span class="split-tag tag-assy">ASSY</span><div class="split-num" id="st-s2-assy">-</div></div>
                     </div>
+                    <div class="shift-breakdown" id="st-s2-breakdown"></div>
                 </div>
                 <div class="stat-card split-card" style="--card-accent: var(--text-faint);">
                     <div class="stat-label">Shift 3</div>
@@ -3192,6 +3288,16 @@
                         <div class="split-divider"></div>
                         <div class="split-item"><span class="split-tag tag-assy">ASSY</span><div class="split-num" id="st-s3-assy">-</div></div>
                     </div>
+                    <div class="shift-breakdown" id="st-s3-breakdown"></div>
+                </div>
+                <div class="stat-card split-card" style="--card-accent: var(--accent);">
+                    <div class="stat-label">Continental</div>
+                    <div class="split-row">
+                        <div class="split-item"><span class="split-tag tag-inj">INJ</span><div class="split-num" id="st-cont-inj">-</div></div>
+                        <div class="split-divider"></div>
+                        <div class="split-item"><span class="split-tag tag-assy">ASSY</span><div class="split-num" id="st-cont-assy">-</div></div>
+                    </div>
+                    <div class="shift-breakdown" id="st-cont-breakdown"></div>
                 </div>
             </div>
 
@@ -3556,10 +3662,34 @@
             </div>
 
             <div class="form-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:12px; flex-wrap:wrap;">
                     <div class="form-card-title" style="margin:0;">Database Karyawan</div>
                     <input type="text" class="form-ctrl" id="search-karyawan" placeholder="🔍 Cari nama..." oninput="filterKaryawan()" style="max-width:260px;">
                 </div>
+
+                <div class="master-filter-panel">
+                    <select class="form-ctrl" id="master-area-filter" onchange="renderTabelMaster()">
+                        <option value="">Semua Area</option>
+                        <option value="Injection">Injection</option>
+                        <option value="Assembling">Assembling</option>
+                    </select>
+                    <select class="form-ctrl" id="master-shift-filter" onchange="renderTabelMaster()">
+                        <option value="">Semua Shift / Grup</option>
+                        <option value="1">Shift 1</option>
+                        <option value="2">Shift 2</option>
+                        <option value="3">Shift 3</option>
+                        <option value="Rolling">Rolling / Mandor</option>
+                        <option value="Continental">Semua Continental</option>
+                        <option value="Continental Grup 1">Continental Grup 1</option>
+                        <option value="Continental Grup 2">Continental Grup 2</option>
+                        <option value="Continental Grup 3">Continental Grup 3</option>
+                        <option value="Continental Grup 4">Continental Grup 4</option>
+                    </select>
+                    <button type="button" class="btn-secondary" onclick="resetMasterFilters()" style="display:inline-flex; align-items:center; justify-content:center;">Reset</button>
+                    <div class="master-filter-note" id="master-filter-note">Klik chip untuk filter cepat.</div>
+                </div>
+                <div id="karyawan-count-chips" class="master-count-grid"></div>
+
                 <div class="table-wrap" style="max-height: 50vh;">
                     <table style="min-width:100%;">
                         <thead>
@@ -4576,28 +4706,55 @@
     }
 
     // ─── LOAD DATA UTAMA (with caching) ───
+    function normalizeDashboardShiftValue(shift) {
+        const s = String(shift || '').trim();
+        const m = s.match(/^(?:Shift\s*)?([123])$/i);
+        return m ? m[1] : null;
+    }
+
+    // ─── LOAD DATA UTAMA (with caching) ───
     function loadDataUtama() {
         db.collection("master_karyawan").get({ source: 'default' }).then(snap => {
             masterKaryawan = [];
             let t_op = 0, t_tetap = 0, t_yayasan = 0;
             let s1_inj = 0, s1_assy = 0, s2_inj = 0, s2_assy = 0, s3_inj = 0, s3_assy = 0;
-
-            const rosterDate = getSelectedRosterDate();
+            let cont_inj = 0, cont_assy = 0;
+            const contGroupCounts = {
+                1: { inj: 0, assy: 0 },
+                2: { inj: 0, assy: 0 },
+                3: { inj: 0, assy: 0 },
+                4: { inj: 0, assy: 0 }
+            };
 
             snap.forEach(doc => {
                 let d = doc.data(); d.id = doc.id;
                 masterKaryawan.push(d);
-                if (d.shift !== "Rolling") {
-                    t_op++;
-                    if (d.status === "Tetap") t_tetap++;
-                    else if (d.status === "Yayasan") t_yayasan++;
 
-                    // Dashboard shift sekarang ikut membaca jadwal Continental.
-                    // Contoh: jika hari ini Shift 1 = Grup 3, maka karyawan "Continental Grup 3" ikut masuk hitungan Shift 1.
-                    const opShift = getOperationalShiftForEmployee(d, rosterDate);
-                    if (opShift === "1") { if (d.wc === "Injection") s1_inj++; else s1_assy++; }
-                    else if (opShift === "2") { if (d.wc === "Injection") s2_inj++; else s2_assy++; }
-                    else if (opShift === "3") { if (d.wc === "Injection") s3_inj++; else s3_assy++; }
+                // Total master = SEMUA karyawan di database.
+                // Tidak ikut logika jadwal harian, jadi grup continental yang sedang tidak shift tetap dihitung.
+                t_op++;
+                if (d.status === "Tetap") t_tetap++;
+                else if (d.status === "Yayasan") t_yayasan++;
+
+                // Kartu Shift 1/2/3 di dashboard = jumlah REAL master shift reguler saja.
+                // Rolling/Mandor dan Continental tidak dicampur ke Shift 1/2/3 agar angka tidak membesar palsu.
+                const rawShift = String(d.shift || '').trim();
+                const shiftNum = normalizeDashboardShiftValue(rawShift);
+                const isInj = d.wc === "Injection";
+
+                if (shiftNum === "1") {
+                    if (isInj) s1_inj++; else s1_assy++;
+                } else if (shiftNum === "2") {
+                    if (isInj) s2_inj++; else s2_assy++;
+                } else if (shiftNum === "3") {
+                    if (isInj) s3_inj++; else s3_assy++;
+                } else if (isContinentalShift(rawShift)) {
+                    const g = getContinentalGroupFromValue(rawShift);
+                    if (isInj) cont_inj++; else cont_assy++;
+                    if (contGroupCounts[g]) {
+                        if (isInj) contGroupCounts[g].inj++;
+                        else contGroupCounts[g].assy++;
+                    }
                 }
             });
             masterKaryawan.sort((a, b) => a.nama.localeCompare(b.nama));
@@ -4611,6 +4768,24 @@
             document.getElementById('st-s2-assy').innerText = s2_assy;
             document.getElementById('st-s3-inj').innerText = s3_inj;
             document.getElementById('st-s3-assy').innerText = s3_assy;
+
+            const contInjEl = document.getElementById('st-cont-inj');
+            const contAssyEl = document.getElementById('st-cont-assy');
+            const contBreakdownEl = document.getElementById('st-cont-breakdown');
+            if (contInjEl) contInjEl.innerText = cont_inj;
+            if (contAssyEl) contAssyEl.innerText = cont_assy;
+            if (contBreakdownEl) {
+                contBreakdownEl.innerHTML = [1, 2, 3, 4].map(g => {
+                    const total = contGroupCounts[g].inj + contGroupCounts[g].assy;
+                    return `<span class="bd-cont">G${g}: ${total}</span>`;
+                }).join(' · ');
+            }
+
+            // Bersihkan breakdown lama di kartu shift supaya angka shift terlihat sebagai master real, bukan gabungan jadwal.
+            ['1','2','3'].forEach(sh => {
+                const el = document.getElementById(`st-s${sh}-breakdown`);
+                if (el) el.innerHTML = '';
+            });
 
             loadGrafikBeranda();
         });
@@ -4929,12 +5104,100 @@
     }
 
     // ─── KELOLA KARYAWAN ───
+    function matchesMasterShift(k, filterValue) {
+        const shift = String(k.shift || '');
+        if (!filterValue) return true;
+        if (filterValue === 'Continental') return isContinentalShift(shift);
+        return shift === filterValue;
+    }
+
+    function countMasterByShift(list) {
+        const counts = {
+            total: list.length,
+            '1': 0,
+            '2': 0,
+            '3': 0,
+            'Rolling': 0,
+            'Continental': 0,
+            'Continental Grup 1': 0,
+            'Continental Grup 2': 0,
+            'Continental Grup 3': 0,
+            'Continental Grup 4': 0
+        };
+        list.forEach(k => {
+            const shift = String(k.shift || '');
+            if (counts[shift] !== undefined) counts[shift]++;
+            if (isContinentalShift(shift)) counts.Continental++;
+        });
+        return counts;
+    }
+
+    function setMasterShiftFilter(value) {
+        const el = document.getElementById('master-shift-filter');
+        if (el) el.value = value || '';
+        renderTabelMaster();
+    }
+
+    function resetMasterFilters() {
+        const area = document.getElementById('master-area-filter');
+        const shift = document.getElementById('master-shift-filter');
+        const search = document.getElementById('search-karyawan');
+        if (area) area.value = '';
+        if (shift) shift.value = '';
+        if (search) search.value = '';
+        renderTabelMaster();
+    }
+
+    function renderMasterCountChips(baseList, visibleList) {
+        const wrap = document.getElementById('karyawan-count-chips');
+        if (!wrap) return;
+        const selected = document.getElementById('master-shift-filter')?.value || '';
+        const counts = countMasterByShift(baseList);
+        const chips = [
+            { value: '', label: 'Semua', count: counts.total },
+            { value: '1', label: 'Shift 1', count: counts['1'] },
+            { value: '2', label: 'Shift 2', count: counts['2'] },
+            { value: '3', label: 'Shift 3', count: counts['3'] },
+            { value: 'Rolling', label: 'Rolling', count: counts.Rolling },
+            { value: 'Continental', label: 'Continental', count: counts.Continental },
+            { value: 'Continental Grup 1', label: 'Cont. G1', count: counts['Continental Grup 1'] },
+            { value: 'Continental Grup 2', label: 'Cont. G2', count: counts['Continental Grup 2'] },
+            { value: 'Continental Grup 3', label: 'Cont. G3', count: counts['Continental Grup 3'] },
+            { value: 'Continental Grup 4', label: 'Cont. G4', count: counts['Continental Grup 4'] }
+        ];
+        wrap.innerHTML = chips.map(ch => `
+            <button type="button" class="master-count-chip ${selected === ch.value ? 'active' : ''}" onclick="setMasterShiftFilter('${ch.value.replace(/'/g, "\\'")}')">
+                <span class="master-count-name">${escapeHTML(ch.label)}</span>
+                <span class="master-count-num">${ch.count}</span>
+            </button>
+        `).join('');
+        const note = document.getElementById('master-filter-note');
+        if (note) note.textContent = `Tampil ${visibleList.length} dari ${baseList.length} data sesuai area/cari.`;
+    }
+
     function renderTabelMaster() {
         const tb = document.getElementById('body-master');
-        const kw = document.getElementById('search-karyawan').value.toLowerCase();
+        const searchEl = document.getElementById('search-karyawan');
+        const kw = (searchEl?.value || '').toLowerCase();
+        const areaFilter = document.getElementById('master-area-filter')?.value || '';
+        const shiftFilter = document.getElementById('master-shift-filter')?.value || '';
         tb.innerHTML = '';
-        masterKaryawan.forEach(k => {
-            if (!k.nama.toLowerCase().includes(kw)) return;
+
+        const baseList = masterKaryawan.filter(k => {
+            if (kw && !String(k.nama || '').toLowerCase().includes(kw)) return false;
+            if (areaFilter && k.wc !== areaFilter) return false;
+            return true;
+        });
+
+        const visibleList = baseList.filter(k => matchesMasterShift(k, shiftFilter));
+        renderMasterCountChips(baseList, visibleList);
+
+        if (!visibleList.length) {
+            tb.innerHTML = `<tr><td colspan="6" style="padding:28px;text-align:center;color:var(--text-faint);font-weight:700;">Tidak ada karyawan sesuai filter.</td></tr>`;
+            return;
+        }
+
+        visibleList.forEach(k => {
             const sisaLalu = k.sisa_cuti_lalu || 0;
             const sisaLaluStyle = sisaLalu > 0
                 ? 'background:rgba(46,213,115,0.12);color:#22c55e;border:1px solid rgba(46,213,115,0.25);'
